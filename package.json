@@ -1,0 +1,27 @@
+{
+  "name": "phoenix-bonds",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:linear-protocol/phoenix-bonds.git"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@types/big.js": "^6.1.6",
+    "husky": "^8.0.2",
+    "lint-staged": "^13.0.4",
+    "prettier": "^2.8.0"
+  },
+  "dependencies": {
+    "ava": "^5.1.0",
+    "big.js": "^6.2.1",
+    "near-workspaces": "^3.2.2",
+    "ts-node": "^10.9.1"
+  }
+}
