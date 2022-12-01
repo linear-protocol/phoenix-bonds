@@ -1,5 +1,6 @@
 import anyTest, { TestFn } from "ava";
 import { NEAR, NearAccount, Worker } from "near-workspaces";
+import { daysToMs } from "./common";
 
 export const tau = 0.03;
 export const alpha = 30 * 24 * 3600 * 1000; // 30 days in ms
@@ -64,6 +65,7 @@ async function initMockLinear(root: NearAccount) {
 
 async function initPhoenixBonds(root: NearAccount, linear: NearAccount) {
   const owner = await root.createSubAccount("owner");
+  const bootstrapEnds = daysToMs(15);
 
   const phoenix = await createAndDeploy(
     root,
@@ -76,6 +78,7 @@ async function initPhoenixBonds(root: NearAccount, linear: NearAccount) {
         linear_address: linear.accountId,
         alpha,
         tau: tau * 100 * 100, // 0.03 -> 3% -> 300 basis point
+        bootstrap_ends: bootstrapEnds,
       },
     }
   );
