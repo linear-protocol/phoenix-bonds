@@ -14,7 +14,7 @@ use near_sdk::{
     near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
     ONE_YOCTO,
 };
-use types::{BasisPoint, Duration, StorageKey};
+use types::{BasisPoint, Duration, StorageKey, Timestamp};
 use weighted_mean_length::WeightedMeanLength;
 
 mod active_vector;
@@ -36,6 +36,7 @@ const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
+const ERR_BOOTSTRAPING: &str = "Commit and redeem are not allowed now";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -68,6 +69,8 @@ pub struct PhoenixBonds {
     bond_notes: BondNotes,
     /// helper module to calculate volume weighted average bonding length
     weighted_mean_length: WeightedMeanLength,
+    /// when bootstraping period ends, before which commit & redeem are disabled
+    bootstrap_ends_at: Timestamp,
 }
 
 #[near_bindgen]
@@ -78,6 +81,7 @@ impl PhoenixBonds {
         linear_address: AccountId,
         alpha: Duration,
         tau: BasisPoint,
+        bootstrap_ends: Timestamp,
     ) -> Self {
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),
@@ -93,6 +97,7 @@ impl PhoenixBonds {
             linear_lost_and_found: LostAndFound::new(),
             bond_notes: BondNotes::new(),
             weighted_mean_length: WeightedMeanLength::new(),
+            bootstrap_ends_at: bootstrap_ends,
         }
     }
 
@@ -221,6 +226,11 @@ impl PhoenixBonds {
         // TODO assert gas
         assert_one_yocto();
 
+        require!(
+            current_timestamp_ms() >= self.bootstrap_ends_at,
+            ERR_BOOTSTRAPING
+        );
+
         let user_id = env::predecessor_account_id();
         let bond_note = self.bond_notes.get_user_note(&user_id, note_id);
         require!(
@@ -300,6 +310,11 @@ impl PhoenixBonds {
     pub fn redeem(&mut self, amount: U128) -> Promise {
         // TODO assert gas
         assert_one_yocto();
+
+        require!(
+            current_timestamp_ms() >= self.bootstrap_ends_at,
+            ERR_BOOTSTRAPING
+        );
 
         let user_id = env::predecessor_account_id();
         require!(
