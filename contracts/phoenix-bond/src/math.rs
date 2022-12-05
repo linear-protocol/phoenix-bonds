@@ -6,12 +6,8 @@ use crate::{
 use near_bigdecimal::*;
 
 impl PhoenixBond {
-    pub(crate) fn net_linear_balance(&self) -> Balance {
-        self.linear_balance - self.linear_lost_and_found.total_amount()
-    }
-
     pub(crate) fn reserve_pool_near_amount(&self, linear_price: Balance) -> Balance {
-        let protocol_owned_near_amount = linear2near(self.net_linear_balance(), linear_price);
+        let protocol_owned_near_amount = linear2near(self.linear_balance, linear_price);
         protocol_owned_near_amount
             - self.pending_pool_near_amount
             - self.permanent_pool_near_amount
@@ -70,11 +66,7 @@ impl PhoenixBond {
 mod tests {
     use near_sdk::ONE_NEAR;
 
-    use crate::{
-        bond_note::tests::new_note,
-        tests::{lost_and_found_ref, new_contract},
-        utils::tests::ONE_DAY_MS,
-    };
+    use crate::{bond_note::tests::new_note, tests::new_contract, utils::tests::ONE_DAY_MS};
 
     use super::*;
 
@@ -83,17 +75,6 @@ mod tests {
 
     fn alice() -> AccountId {
         AccountId::new_unchecked("alice".into())
-    }
-
-    #[test]
-    fn test_net_linear_balance() {
-        let mut contract = new_contract(10_000 * ONE_LINEAR, 0, 0, 0, 0, 0);
-        assert_eq!(contract.net_linear_balance(), 10_000 * ONE_LINEAR);
-
-        let lost_found = lost_and_found_ref(&mut contract);
-        lost_found.insert(&alice(), 1000 * ONE_LINEAR);
-
-        assert_eq!(contract.net_linear_balance(), 9000 * ONE_LINEAR);
     }
 
     #[test]

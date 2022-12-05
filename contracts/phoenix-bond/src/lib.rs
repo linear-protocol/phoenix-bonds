@@ -258,8 +258,8 @@ impl PhoenixBond {
         let mut treasury_gained_near_amount = amount_for_treasury;
         if is_first_commit {
             // assign all staking profits before the first commit to treasury
-            treasury_gained_near_amount += linear2near(self.net_linear_balance(), linear_price.0)
-                - self.pending_pool_near_amount;
+            treasury_gained_near_amount +=
+                linear2near(self.linear_balance, linear_price.0) - self.pending_pool_near_amount;
         }
 
         let reserve_should_gain_near_amount = self.accrued_amount(
@@ -412,9 +412,5 @@ mod tests {
         contract.treasury_pool_near_amount = treasury_pool_near_amount;
 
         contract
-    }
-
-    pub(crate) fn lost_and_found_ref(contract: &mut PhoenixBond) -> &mut LostAndFound {
-        &mut contract.linear_lost_and_found
     }
 }
