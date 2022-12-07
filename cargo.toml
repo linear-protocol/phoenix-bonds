@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "contracts/phoenix-bond",
+  "contracts/phoenix-bonds",
   "contracts/mock-linear"
 ]
 

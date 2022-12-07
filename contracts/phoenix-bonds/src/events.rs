@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn lock() {
+    fn bond() {
         Event::Bond {
             account_id: alice(),
             bond_amount: U128(1000),

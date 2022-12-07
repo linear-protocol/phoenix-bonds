@@ -40,7 +40,7 @@ const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct PhoenixBond {
     /// pNEAR token
-    tokens: FungibleToken,
+    ft: FungibleToken,
     /// contract owner
     owner_id: AccountId,
     /// LiNEAR contract address
@@ -79,7 +79,7 @@ impl PhoenixBond {
         tau: BasisPoint,
     ) -> Self {
         Self {
-            tokens: FungibleToken::new(StorageKey::FungibleToken),
+            ft: FungibleToken::new(StorageKey::FungibleToken),
             owner_id,
             linear_address,
             paused: false,
@@ -306,7 +306,7 @@ impl PhoenixBond {
         // TODO assert 1 yocto
         let user_id = env::predecessor_account_id();
         require!(
-            self.tokens.internal_unwrap_balance_of(&user_id) >= amount.0,
+            self.ft.internal_unwrap_balance_of(&user_id) >= amount.0,
             ERR_NO_ENOUGH_BALANCE
         );
 
@@ -326,7 +326,7 @@ impl PhoenixBond {
     ) -> Promise {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         require!(
-            self.tokens.internal_unwrap_balance_of(&user_id) >= pnear_amount.0,
+            self.ft.internal_unwrap_balance_of(&user_id) >= pnear_amount.0,
             ERR_NO_ENOUGH_BALANCE
         );
 

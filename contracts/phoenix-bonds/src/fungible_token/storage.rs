@@ -19,7 +19,7 @@ impl StorageManagement for PhoenixBond {
     ) -> StorageBalance {
         let amount = env::attached_deposit();
         let account_id = account_id.unwrap_or_else(env::predecessor_account_id);
-        if self.tokens.accounts.get(&account_id).is_some() {
+        if self.ft.accounts.get(&account_id).is_some() {
             log!("This account is already registered, refunding the deposit");
             if amount > 0 {
                 Promise::new(env::predecessor_account_id()).transfer(amount);
@@ -34,7 +34,7 @@ impl StorageManagement for PhoenixBond {
                 )
             );
 
-            self.tokens.internal_register_account(&account_id);
+            self.ft.internal_register_account(&account_id);
             let refund = amount - min_balance;
             if refund > 0 {
                 Promise::new(env::predecessor_account_id()).transfer(refund);
@@ -96,7 +96,7 @@ impl PhoenixBond {
         &self,
         account_id: &AccountId,
     ) -> Option<StorageBalance> {
-        if self.tokens.accounts.get(account_id).is_some() {
+        if self.ft.accounts.get(account_id).is_some() {
             Some(StorageBalance {
                 total: self.storage_balance_bounds().min,
                 available: 0.into(),

@@ -68,7 +68,7 @@ async function initPhoenixBonds(root: NearAccount, linear: NearAccount) {
   const phoenix = await createAndDeploy(
     root,
     "phoenix",
-    "tests/compiled-contracts/phoenix_bond_test.wasm",
+    "tests/compiled-contracts/phoenix_bonds_test.wasm",
     {
       method: "new",
       args: {

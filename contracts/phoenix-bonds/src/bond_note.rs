@@ -120,7 +120,7 @@ impl BondNotes {
     pub fn get_user_pending_note_ids(&self, account_id: &AccountId) -> Vec<u32> {
         self.notes
             .get(account_id)
-            .map(|v| v.get_active_item_indexes())
+            .map(|v| v.get_active_item_indices())
             .unwrap_or_default()
     }
 

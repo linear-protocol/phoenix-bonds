@@ -62,7 +62,7 @@ impl<T: Active + BorshSerialize + BorshDeserialize> ActiveVector<T> {
             .collect()
     }
 
-    pub fn get_active_item_indexes(&self) -> Vec<u32> {
+    pub fn get_active_item_indices(&self) -> Vec<u32> {
         self.active_items.iter().copied().collect()
     }
 
