@@ -68,7 +68,7 @@ impl PhoenixBonds {
     }
 
     pub fn claim_lost_and_found(&mut self) -> Promise {
-        // TODO assert gas
+        self.assert_gas(Gas(20 * TGAS) + GAS_FT_TRANSFER_AND_CALLBACK);
 
         let user_id = env::predecessor_account_id();
         let amount = self.linear_lost_and_found.remove(&user_id);

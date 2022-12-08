@@ -1,4 +1,4 @@
-import { NEAR, NearAccount, TransactionResult } from "near-workspaces";
+import { Gas, NEAR, NearAccount, TransactionResult } from "near-workspaces";
 
 export interface BondNote {
   id: number;
@@ -74,6 +74,7 @@ export async function bond(
     {},
     {
       attachedDeposit: amount,
+      gas: Gas.parse("120 Tgas"),
     }
   );
 }
