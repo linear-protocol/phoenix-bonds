@@ -33,7 +33,7 @@ const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 const ERR_SMALL_BOND_AMOUNT: &str = "Bond requires at least 0.1 NEAR";
 const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
-const ERR_NO_ENOUGH_BALANCE: &str = "No enough pNEAR balance";
+const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
 
 #[near_bindgen]
