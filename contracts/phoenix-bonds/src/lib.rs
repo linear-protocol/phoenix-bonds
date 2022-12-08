@@ -7,6 +7,7 @@ use events::Event;
 use lost_found::LostAndFound;
 use near_contract_standards::fungible_token::FungibleToken;
 use near_sdk::{
+    assert_one_yocto,
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
@@ -153,9 +154,10 @@ impl PhoenixBond {
     // ======== Cancel ========
 
     /// Cancel a bond, will return corresponding LiNEAR tokens to the user
+    #[payable]
     pub fn cancel(&mut self, note_id: u32) -> Promise {
         // TODO assert gas
-        // TODO 1 yocto?
+        assert_one_yocto();
 
         let user_id = env::predecessor_account_id();
         let bond_note = self.bond_notes.get_user_note(&user_id, note_id);
@@ -181,10 +183,6 @@ impl PhoenixBond {
     ) -> Promise {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         let mut bond_note = self.bond_notes.get_user_note(&user_id, note_id);
-        require!(
-            bond_note.status() == BondStatus::Pending,
-            ERR_BOND_NOT_PENDING
-        );
 
         let refund_linear = near2linear(bond_note.bond_amount(), linear_price.0);
 
@@ -218,9 +216,10 @@ impl PhoenixBond {
 
     // ======== Commit ========
 
+    #[payable]
     pub fn commit(&mut self, note_id: u32) -> Promise {
         // TODO assert gas
-        // TODO assert 1 yocto
+        assert_one_yocto();
 
         let user_id = env::predecessor_account_id();
         let bond_note = self.bond_notes.get_user_note(&user_id, note_id);
@@ -245,10 +244,6 @@ impl PhoenixBond {
     ) -> U128 {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         let mut bond_note = self.bond_notes.get_user_note(&user_id, note_id);
-        require!(
-            bond_note.status() == BondStatus::Pending,
-            ERR_BOND_NOT_PENDING
-        );
         let bond_amount = bond_note.bond_amount();
 
         let current_timestamp = current_timestamp_ms();
@@ -301,9 +296,11 @@ impl PhoenixBond {
 
     // ======== Redeem ========
 
+    #[payable]
     pub fn redeem(&mut self, amount: U128) -> Promise {
         // TODO assert gas
-        // TODO assert 1 yocto
+        assert_one_yocto();
+
         let user_id = env::predecessor_account_id();
         require!(
             self.ft.internal_unwrap_balance_of(&user_id) >= amount.0,
@@ -312,7 +309,7 @@ impl PhoenixBond {
 
         self.get_linear_price().then(
             Self::ext(env::current_account_id())
-                .with_attached_deposit(1)
+                .with_static_gas(1.into()) // TODO
                 .on_get_linear_price_for_redeem(user_id, amount),
         )
     }

@@ -7,24 +7,24 @@ use near_sdk::{near_bindgen, Balance};
 use crate::types::FULL_BASIS_POINT;
 use crate::*;
 
-fn near_decimals() -> BigDecimal {
+fn near_like_decimals() -> BigDecimal {
     BigDecimal::from(10_u64).pow(24)
 }
 
 pub fn near2linear(near_amount: Balance, linear_price: Balance) -> Balance {
-    (BigDecimal::from(near_amount) * near_decimals() / linear_price.into()).round_u128()
+    (BigDecimal::from(near_amount) * near_like_decimals() / linear_price.into()).round_u128()
 }
 
 pub fn linear2near(linear_amount: Balance, linear_price: Balance) -> Balance {
-    (BigDecimal::from(linear_amount) * linear_price.into() / near_decimals()).round_u128()
+    (BigDecimal::from(linear_amount) * linear_price.into() / near_like_decimals()).round_u128()
 }
 
 pub fn pnear2near(pnear_amount: Balance, pnear_price: Balance) -> Balance {
-    (BigDecimal::from(pnear_amount) * pnear_price.into() / near_decimals()).round_u128()
+    (BigDecimal::from(pnear_amount) * pnear_price.into() / near_like_decimals()).round_u128()
 }
 
 pub fn near2pnear(near_amount: Balance, pnear_price: Balance) -> Balance {
-    (BigDecimal::from(near_amount) * near_decimals() / pnear_price.into()).round_u128()
+    (BigDecimal::from(near_amount) * near_like_decimals() / pnear_price.into()).round_u128()
 }
 
 pub fn apply_basis_point(value: u128, point: u32) -> u128 {

@@ -39,7 +39,7 @@ impl PhoenixBond {
         (BigDecimal::from(value) * length.into() / (length + alpha).into()).round_u128()
     }
 
-    /// Cap of pNEAR that a bond note worthes.
+    /// Cap of pNEAR that a bond note is worth.
     /// Note that it's meaningless to call this on a committed/cancelled note.
     pub(crate) fn note_cap(&self, note: &BondNote, linear_price: Balance) -> Balance {
         let bond_amount = note.bond_amount();
