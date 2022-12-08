@@ -58,7 +58,7 @@ pub struct PhoenixBond {
     treasury_pool_near_amount: Balance,
     /// pNEAR accrue parameter
     alpha: Duration,
-    /// max percentage of bond amount that goes to permanent pool when a user claims
+    /// max percentage of bond amount that goes to treasury pool when a user claims
     tau: BasisPoint,
 
     /// amount of LiNEAR that was not sucessfully transferred
