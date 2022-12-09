@@ -37,6 +37,7 @@ const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
 const ERR_BOOTSTRAPING: &str = "Commit and redeem are not allowed now";
+const ERR_BAD_BOOTSTRAP_END: &str = "Bootstrap end time must be in the future";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -83,6 +84,11 @@ impl PhoenixBonds {
         tau: BasisPoint,
         bootstrap_ends: Timestamp,
     ) -> Self {
+        require!(
+            bootstrap_ends > current_timestamp_ms(),
+            ERR_BAD_BOOTSTRAP_END
+        );
+
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),
             owner_id,
@@ -416,7 +422,7 @@ mod tests {
     ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let mut contract = PhoenixBonds::new(owner, linear, alpha, tau, 0);
+        let mut contract = PhoenixBonds::new(owner, linear, alpha, tau, 1);
 
         contract.linear_balance = linear_balance;
         contract.pending_pool_near_amount = pending_pool_near_amount;
