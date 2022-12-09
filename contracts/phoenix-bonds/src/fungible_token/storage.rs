@@ -7,7 +7,7 @@ use near_sdk::{assert_one_yocto, env, json_types::U128, log, require, AccountId,
 const STORAGE_AMOUNT_BYTES: u128 = 125;
 
 #[near_bindgen]
-impl StorageManagement for PhoenixBond {
+impl StorageManagement for PhoenixBonds {
     /* ======== CALL FUNCTIONS ======== */
 
     #[allow(unused_variables)]
@@ -91,7 +91,7 @@ impl StorageManagement for PhoenixBond {
     }
 }
 
-impl PhoenixBond {
+impl PhoenixBonds {
     pub(crate) fn internal_storage_balance_of(
         &self,
         account_id: &AccountId,

@@ -39,7 +39,7 @@ const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-pub struct PhoenixBond {
+pub struct PhoenixBonds {
     /// pNEAR token
     ft: FungibleToken,
     /// contract owner
@@ -71,7 +71,7 @@ pub struct PhoenixBond {
 }
 
 #[near_bindgen]
-impl PhoenixBond {
+impl PhoenixBonds {
     #[init]
     pub fn new(
         owner_id: AccountId,
@@ -304,7 +304,7 @@ impl PhoenixBond {
         let user_id = env::predecessor_account_id();
         require!(
             self.ft.internal_unwrap_balance_of(&user_id) >= amount.0,
-            ERR_NO_ENOUGH_BALANCE
+            ERR_NOT_ENOUGH_PNEAR_BALANCE
         );
 
         self.get_linear_price().then(
@@ -324,7 +324,7 @@ impl PhoenixBond {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         require!(
             self.ft.internal_unwrap_balance_of(&user_id) >= pnear_amount.0,
-            ERR_NO_ENOUGH_BALANCE
+            ERR_NOT_ENOUGH_PNEAR_BALANCE
         );
 
         // equivalent amount of NEAR that given pNEAR worth
@@ -398,10 +398,10 @@ mod tests {
         treasury_pool_near_amount: Balance,
         alpha: Duration,
         tau: BasisPoint,
-    ) -> PhoenixBond {
+    ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let mut contract = PhoenixBond::new(owner, linear, alpha, tau);
+        let mut contract = PhoenixBonds::new(owner, linear, alpha, tau);
 
         contract.linear_balance = linear_balance;
         contract.pending_pool_near_amount = pending_pool_near_amount;

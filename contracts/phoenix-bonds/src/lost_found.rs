@@ -8,7 +8,7 @@ use near_sdk::{
 };
 
 use crate::*;
-use crate::{types::StorageKey, PhoenixBond};
+use crate::{types::StorageKey, PhoenixBonds};
 
 const ERR_NO_LINEAR_TO_CLAIM: &str = "No lost and found LiNEAR to claim";
 
@@ -62,7 +62,7 @@ impl LostAndFound {
 }
 
 #[near_bindgen]
-impl PhoenixBond {
+impl PhoenixBonds {
     pub fn user_lost_and_found(&self, account_id: AccountId) -> U128 {
         self.linear_lost_and_found.user_amount(&account_id).into()
     }

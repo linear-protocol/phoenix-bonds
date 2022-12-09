@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use crate::{
     active_vector::{Active, ActiveVector},
     types::{Duration, StorageKey, Timestamp},
-    PhoenixBond, *,
+    PhoenixBonds, *,
 };
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
@@ -175,7 +175,7 @@ pub struct BondNoteInfo {
     accrued_pnear: Balance,
 }
 
-impl PhoenixBond {
+impl PhoenixBonds {
     pub(crate) fn build_note_info(&self, note: &BondNote, linear_price: Balance) -> BondNoteInfo {
         BondNoteInfo {
             id: note.id,
@@ -192,7 +192,7 @@ impl PhoenixBond {
 }
 
 #[near_bindgen]
-impl PhoenixBond {
+impl PhoenixBonds {
     pub fn get_bond_note(
         &self,
         account_id: AccountId,

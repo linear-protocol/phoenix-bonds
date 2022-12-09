@@ -49,7 +49,7 @@ pub fn current_timestamp_ms() -> Timestamp {
 }
 
 #[near_bindgen]
-impl PhoenixBond {
+impl PhoenixBonds {
     #[cfg(feature = "test")]
     pub fn set_current_timestamp_ms(&mut self, ms: Timestamp) {
         let test_timestamp_key: &[u8] = "_test_ts_".as_bytes();

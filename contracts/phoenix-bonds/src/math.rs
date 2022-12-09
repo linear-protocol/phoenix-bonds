@@ -5,7 +5,7 @@ use crate::{
 };
 use near_bigdecimal::*;
 
-impl PhoenixBond {
+impl PhoenixBonds {
     pub(crate) fn reserve_pool_near_amount(&self, linear_price: Balance) -> Balance {
         let protocol_owned_near_amount = linear2near(self.linear_balance, linear_price);
         protocol_owned_near_amount

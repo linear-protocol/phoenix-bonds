@@ -6,7 +6,7 @@ use near_contract_standards::fungible_token::metadata::{
 const DATA_IMAGE_SVG_ICON: &str = "";
 
 #[near_bindgen]
-impl FungibleTokenMetadataProvider for PhoenixBond {
+impl FungibleTokenMetadataProvider for PhoenixBonds {
     fn ft_metadata(&self) -> FungibleTokenMetadata {
         FungibleTokenMetadata {
             spec: FT_METADATA_SPEC.to_string(),

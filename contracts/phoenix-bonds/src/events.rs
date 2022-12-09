@@ -2,7 +2,7 @@ use near_sdk::{json_types::U128, log, AccountId};
 use serde::Serialize;
 use serde_json::json;
 
-const EVENT_STANDARD: &str = "phoenix_bond";
+const EVENT_STANDARD: &str = "phoenix_bonds";
 const EVENT_STANDARD_VERSION: &str = "1.0.0";
 
 #[derive(Serialize, Debug, Clone)]
@@ -77,7 +77,7 @@ mod tests {
         .emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"phoenix_bond","version":"1.0.0","event":"bond","data":[{"account_id":"alice","bond_amount":"1000","linear_amount":"1000"}]}"#
+            r#"EVENT_JSON:{"standard":"phoenix_bonds","version":"1.0.0","event":"bond","data":[{"account_id":"alice","bond_amount":"1000","linear_amount":"1000"}]}"#
         );
     }
 }

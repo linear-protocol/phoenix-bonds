@@ -4,7 +4,7 @@ use near_sdk::{assert_one_yocto, env, near_bindgen};
 const ERR_NOT_OWNER: &str = "Not owner";
 
 #[near_bindgen]
-impl PhoenixBond {
+impl PhoenixBonds {
     #[payable]
     pub fn change_owner(&mut self, new_owner_id: AccountId) {
         self.assert_owner();
@@ -24,7 +24,7 @@ impl PhoenixBond {
     }
 }
 
-impl PhoenixBond {
+impl PhoenixBonds {
     pub(crate) fn assert_owner(&self) {
         assert_one_yocto();
         require!(
