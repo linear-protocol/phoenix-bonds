@@ -17,12 +17,19 @@ const ERR_BAD_TIMESTAMP: &str = "Bad timestamp for computing mean";
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct AccuralParameter {
+    /// last updated alpha value
     alpha: u64,
+    /// minimum value that alpha could decrease to
     min_alpha: u64,
+    /// target weighted mean length of all pending bonds
     target_mean_length: u64,
+    /// alpha decreases each interval after mean length exceeds target
     adjust_interval: Duration,
+    /// how much should alpha decrease in each interval
     adjust_rate: BasisPoint,
+    /// when was alpha last updated
     last_updated_at: Timestamp,
+    /// volume weighted mean bonding length
     mean_length: WeightedMeanLength,
 }
 
@@ -104,9 +111,9 @@ impl AccuralParameter {
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 struct WeightedMeanLength {
-    /// sum of (bond amout * bond length) for all pending bond
+    /// sum of (bond amount * bond length) for all pending bond
     weighted_sum: u128,
-    /// sum of bond amount for all pending bond
+    /// sum of bond amount for all pending bonds
     total_weight: u128,
     /// last update timestamp
     updated_at: Timestamp,
