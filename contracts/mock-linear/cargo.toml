@@ -1,0 +1,14 @@
+[package]
+name = "mock-linear"
+version = "0.0.1"
+authors = ["dongcool"]
+edition = "2018"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = "4.1.1"
+near-contract-standards = "4.1.1"
+near-bigdecimal = "0.1.0"
