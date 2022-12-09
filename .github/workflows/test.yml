@@ -14,6 +14,9 @@ jobs:
     name: "contract tests"
     # runs-on: self-hosted
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
     steps:
       - uses: actions/checkout@v3
       # Setup Rust environment
@@ -41,6 +44,9 @@ jobs:
     name: clippy and fmt
     # runs-on: self-hosted
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
     steps:
       - uses: actions/checkout@v3
       # Setup Rust environment
