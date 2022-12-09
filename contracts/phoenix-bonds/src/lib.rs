@@ -416,7 +416,7 @@ mod tests {
     ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let mut contract = PhoenixBonds::new(owner, linear, alpha, tau);
+        let mut contract = PhoenixBonds::new(owner, linear, alpha, tau, 0);
 
         contract.linear_balance = linear_balance;
         contract.pending_pool_near_amount = pending_pool_near_amount;
