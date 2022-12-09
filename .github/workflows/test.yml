@@ -1,0 +1,65 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  NEAR_WORKSPACES_NO_LOGS: true
+
+jobs:
+  test-contract:
+    name: "contract tests"
+    # runs-on: self-hosted
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@v3
+      # Setup Rust environment
+      - name: Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      # Set up Node environment
+      - name: Setup Node
+        uses: actions/setup-node@v3.1.1
+        with:
+          node-version: 16.13
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+      - name: Install Dependencies
+        run: npm install
+      # Run tests
+      - name: Run tests
+        run: make test
+
+  lint:
+    name: clippy and fmt
+    # runs-on: self-hosted
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@v3
+      # Setup Rust environment
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v1
+      # Run lint
+      - name: Test Format
+        run: cargo fmt -- --check
+      - name: Lint with clippy
+        run: cargo clippy --tests -- -D clippy::all

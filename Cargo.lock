@@ -641,9 +641,9 @@ dependencies = [
 
 [[package]]
 name = "near-bigdecimal"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65b294055b2cc0269aafcb02d4065e45dbfa9b732de7ced2959459cfcf749df3"
+checksum = "3a22bb261f291297724434a500981dcf2b0c58669568440a36f12d30be6d950a"
 dependencies = [
  "near-sdk",
  "uint",
