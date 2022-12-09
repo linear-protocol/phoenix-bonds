@@ -8,6 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  NEAR_WORKSPACES_NO_LOGS: true
 
 jobs:
   test-contract:
