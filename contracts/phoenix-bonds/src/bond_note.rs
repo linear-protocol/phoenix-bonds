@@ -19,7 +19,7 @@ pub const ERR_BOND_WRONG_STATE_TO_CANCEL: &str = "Bond in wrong state to cancel"
 pub const ERR_BOND_WRONG_STATE_TO_COMMIT: &str = "Bond in wrong state to commit";
 pub const ERR_WRONG_TIMESTAMP: &str = "Wrong timestamp when computing note length";
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Clone, PartialEq)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(crate = "near_sdk::serde")]
 pub enum BondStatus {
     Pending,
