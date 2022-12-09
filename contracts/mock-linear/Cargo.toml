@@ -11,4 +11,4 @@ crate-type = ["cdylib"]
 [dependencies]
 near-sdk = "4.1.1"
 near-contract-standards = "4.1.1"
-near-bigdecimal = "0.1.0"
+near-bigdecimal = "0.1.1"
