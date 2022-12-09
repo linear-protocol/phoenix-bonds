@@ -59,6 +59,10 @@ function parseError(e: any): string {
   }
 }
 
+export function daysToMs(days: number) {
+  return days * 24 * 3600 * 1000;
+}
+
 export async function bond(
   account: NearAccount,
   phoenix: NearAccount,
