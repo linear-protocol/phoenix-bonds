@@ -14,8 +14,6 @@ jobs:
     name: "contract tests"
     # runs-on: self-hosted
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       - uses: actions/checkout@v3
       # Setup Rust environment
