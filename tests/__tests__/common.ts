@@ -12,6 +12,10 @@ export interface BondNote {
   accrued_pnear: string;
 }
 
+export function daysToMs(n: number) {
+  return n * 24 * 3600 * 1000;
+}
+
 export async function assertFailure(
   test: any,
   action: Promise<unknown>,
@@ -59,8 +63,31 @@ function parseError(e: any): string {
   }
 }
 
-export function daysToMs(days: number) {
-  return days * 24 * 3600 * 1000;
+export async function setLinearPrice(linear: NearAccount, price: string) {
+  return linear.call(linear, "set_ft_price", {
+    price,
+  });
+}
+
+export async function getLinearPrice(linear: NearAccount): Promise<string> {
+  return linear.view("ft_price", {});
+}
+
+export async function ftStorageDeposit(ft: NearAccount, account: NearAccount) {
+  return account.call(
+    ft,
+    "storage_deposit",
+    {},
+    {
+      attachedDeposit: NEAR.parse("0.1"),
+    }
+  );
+}
+
+export async function setTimestamp(phoenix: NearAccount, ts: number) {
+  return phoenix.call(phoenix, "set_current_timestamp_ms", {
+    ms: ts,
+  });
 }
 
 export async function bond(
@@ -90,4 +117,22 @@ export async function getBondNote(
     note_id: noteId,
     linear_price: linearPrice,
   });
+}
+
+export async function cancel(
+  phoenix: NearAccount,
+  account: NearAccount,
+  noteId: number
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "cancel",
+    {
+      note_id: noteId,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("160 Tgas"),
+    }
+  );
 }
