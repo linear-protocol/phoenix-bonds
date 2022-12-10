@@ -1,6 +1,6 @@
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    env, require, Balance, PanicOnDefault,
+    require, Balance, PanicOnDefault,
 };
 
 use crate::types::{Duration, Timestamp};
