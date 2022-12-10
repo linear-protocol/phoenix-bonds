@@ -37,7 +37,8 @@ define compile_test
 	@mkdir -p res
 endef
 
-test: test-unit test-integration
+test: test-unit 
+	NEAR_WORKSPACES_NO_LOGS=1 make test-integration
 
 test-unit: 
 	cargo test

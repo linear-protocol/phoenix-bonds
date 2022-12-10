@@ -1,3 +1,4 @@
+import Big from "big.js";
 import { Gas, NEAR, NearAccount, TransactionResult } from "near-workspaces";
 
 export interface BondNote {
@@ -14,6 +15,10 @@ export interface BondNote {
 
 export function daysToMs(n: number) {
   return n * 24 * 3600 * 1000;
+}
+
+export function applyNearDecimals(n: string) {
+  return Big(n).mul(1e24);
 }
 
 export async function assertFailure(
@@ -133,6 +138,24 @@ export async function cancel(
     {
       attachedDeposit: NEAR.from("1"),
       gas: Gas.parse("160 Tgas"),
+    }
+  );
+}
+
+export async function commit(
+  phoenix: NearAccount,
+  account: NearAccount,
+  noteId: number
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "commit",
+    {
+      note_id: noteId,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("90 Tgas"),
     }
   );
 }
