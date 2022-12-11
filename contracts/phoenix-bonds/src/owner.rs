@@ -12,12 +12,6 @@ impl PhoenixBonds {
     }
 
     #[payable]
-    pub fn set_alpha(&mut self, new_alpha: Duration) {
-        self.assert_owner();
-        self.alpha = new_alpha;
-    }
-
-    #[payable]
     pub fn set_tau(&mut self, new_tau: BasisPoint) {
         self.assert_owner();
         self.tau = new_tau;

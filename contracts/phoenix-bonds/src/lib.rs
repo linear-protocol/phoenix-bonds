@@ -2,6 +2,7 @@ use crate::{
     interfaces::{ext_fungible_token, linear_contract},
     utils::*,
 };
+use accural::AccuralParameter;
 use bond_note::{BondNote, BondNotes, BondStatus};
 use events::Event;
 use lost_found::LostAndFound;
@@ -11,12 +12,13 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
-    near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
-    ONE_YOCTO,
+    near_bindgen, require,
+    serde::{Deserialize, Serialize},
+    AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp};
-use weighted_mean_length::WeightedMeanLength;
 
+mod accural;
 mod active_vector;
 mod bond_note;
 mod events;
@@ -27,7 +29,6 @@ mod math;
 mod owner;
 mod types;
 mod utils;
-mod weighted_mean_length;
 
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 
@@ -59,19 +60,27 @@ pub struct PhoenixBonds {
     permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
     treasury_pool_near_amount: Balance,
-    /// pNEAR accrue parameter
-    alpha: Duration,
-    /// max percentage of bond amount that goes to treasury pool when a user claims
+    /// max percentage of bond amount that goes to permanent pool when a user claims
     tau: BasisPoint,
 
     /// amount of LiNEAR that was not sucessfully transferred
     linear_lost_and_found: LostAndFound,
     /// bond note for each user
     bond_notes: BondNotes,
-    /// helper module to calculate volume weighted average bonding length
-    weighted_mean_length: WeightedMeanLength,
     /// when bootstraping period ends, before which commit & redeem are disabled
     bootstrap_ends_at: Timestamp,
+    /// helper module to calculate accural parameter (alpha)
+    accural_param: AccuralParameter,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AccuralConfig {
+    alpha: Duration,
+    min_alpha: Duration,
+    target_mean_length: Duration,
+    adjust_interval: Duration,
+    adjust_rate: BasisPoint,
 }
 
 #[near_bindgen]
@@ -80,9 +89,9 @@ impl PhoenixBonds {
     pub fn new(
         owner_id: AccountId,
         linear_address: AccountId,
-        alpha: Duration,
         tau: BasisPoint,
         bootstrap_ends: Timestamp,
+        accural: AccuralConfig,
     ) -> Self {
         require!(
             bootstrap_ends > current_timestamp_ms(),
@@ -98,12 +107,17 @@ impl PhoenixBonds {
             pending_pool_near_amount: 0,
             permanent_pool_near_amount: 0,
             treasury_pool_near_amount: 0,
-            alpha,
             tau,
             linear_lost_and_found: LostAndFound::new(),
             bond_notes: BondNotes::new(),
-            weighted_mean_length: WeightedMeanLength::new(),
             bootstrap_ends_at: bootstrap_ends,
+            accural_param: AccuralParameter::new(
+                accural.alpha,
+                accural.min_alpha,
+                accural.target_mean_length,
+                accural.adjust_interval,
+                accural.adjust_rate,
+            ),
         }
     }
 
@@ -143,8 +157,8 @@ impl PhoenixBonds {
             self.pending_pool_near_amount += bond_amount.0;
             self.linear_balance += linear_amount.0;
 
-            self.weighted_mean_length
-                .insert(bond_amount.0, current_timestamp_ms());
+            self.accural_param
+                .weighted_mean_insert(bond_amount.0, current_timestamp_ms());
 
             let note = self.bond_notes.insert_new_note(&user_id, bond_amount.0);
 
@@ -207,7 +221,7 @@ impl PhoenixBonds {
         self.linear_balance -= refund_linear;
 
         let current_timestamp = current_timestamp_ms();
-        self.weighted_mean_length.remove(
+        self.accural_param.weighted_mean_remove(
             bond_note.bond_amount(),
             bond_note.length(current_timestamp),
             current_timestamp,
@@ -294,8 +308,8 @@ impl PhoenixBonds {
         self.permanent_pool_near_amount += permanent_gained_near_amount;
         self.pending_pool_near_amount -= bond_amount;
 
-        self.weighted_mean_length
-            .remove(bond_amount, note_length, current_timestamp);
+        self.accural_param
+            .weighted_mean_remove(bond_amount, note_length, current_timestamp);
 
         self.mint_pnear(&user_id, pnear_to_mint, Some("Commit Bond"));
 
@@ -422,7 +436,23 @@ mod tests {
     ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let mut contract = PhoenixBonds::new(owner, linear, alpha, tau, 1);
+        let min_alpha: Duration = 0;
+        let target_mean_length: u64 = 15 * 86400 * 1000;
+        let adjust_interval: u64 = 86400 * 1000;
+        let adjust_rate = 100;
+        let mut contract = PhoenixBonds::new(
+            owner,
+            linear,
+            tau,
+            1,
+            AccuralConfig {
+                alpha,
+                min_alpha,
+                target_mean_length,
+                adjust_interval,
+                adjust_rate,
+            },
+        );
 
         contract.linear_balance = linear_balance;
         contract.pending_pool_near_amount = pending_pool_near_amount;

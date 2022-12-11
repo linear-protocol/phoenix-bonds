@@ -1,3 +1,5 @@
+use std::convert::{TryFrom, TryInto};
+
 use near_bigdecimal::*;
 #[allow(unused_imports)]
 use near_sdk::borsh::BorshDeserialize;
@@ -27,8 +29,12 @@ pub fn near2pnear(near_amount: Balance, pnear_price: Balance) -> Balance {
     (BigDecimal::from(near_amount) * near_like_decimals() / pnear_price.into()).round_u128()
 }
 
-pub fn apply_basis_point(value: u128, point: u32) -> u128 {
-    value * point as u128 / FULL_BASIS_POINT as u128
+pub fn apply_basis_point<T>(value: T, point: u32) -> T
+where
+    T: std::ops::Mul<Output = T> + std::ops::Div<Output = T> + TryFrom<u32>,
+    <T as TryFrom<u32>>::Error: std::fmt::Debug,
+{
+    value * point.try_into().unwrap() / FULL_BASIS_POINT.try_into().unwrap()
 }
 
 #[cfg(not(feature = "test"))]
@@ -82,4 +88,5 @@ pub mod u128_dec_format {
 #[cfg(test)]
 pub mod tests {
     pub const ONE_DAY_MS: u64 = 24 * 3600 * 1000;
+    pub const HALF_DAY_MS: u64 = ONE_DAY_MS / 2;
 }

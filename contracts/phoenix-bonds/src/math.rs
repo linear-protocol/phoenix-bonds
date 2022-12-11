@@ -24,18 +24,13 @@ impl PhoenixBonds {
         .round_u128()
     }
 
-    pub(crate) fn current_alpha(&self, ts: Timestamp) -> Duration {
-        // TODO
-        self.alpha
-    }
-
     pub(crate) fn accrued_amount(
         &self,
         value: Balance,
         length: Duration,
         current_timestamp: Timestamp,
     ) -> Balance {
-        let alpha = self.current_alpha(current_timestamp);
+        let alpha = self.accural_param.current_alpha(current_timestamp);
         (BigDecimal::from(value) * length.into() / (length + alpha).into()).round_u128()
     }
 
