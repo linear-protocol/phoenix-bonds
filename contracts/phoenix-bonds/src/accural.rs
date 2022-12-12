@@ -1,3 +1,4 @@
+use near_bigdecimal::BigDecimal;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     require, Balance, PanicOnDefault,
@@ -112,7 +113,7 @@ impl AccuralParameter {
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 struct WeightedMeanLength {
     /// sum of (bond amount * bond length) for all pending bond
-    weighted_sum: u128,
+    weighted_sum: BigDecimal,
     /// sum of bond amount for all pending bonds
     total_weight: u128,
     /// last update timestamp
@@ -122,7 +123,7 @@ struct WeightedMeanLength {
 impl WeightedMeanLength {
     fn new() -> Self {
         Self {
-            weighted_sum: 0,
+            weighted_sum: BigDecimal::from(0u128),
             total_weight: 0,
             updated_at: 0,
         }
@@ -134,12 +135,13 @@ impl WeightedMeanLength {
         if self.total_weight == 0 {
             return 0;
         }
-        self.weighted_sum / self.total_weight + (ts - self.updated_at) as u128
+        let time_since_last_update = ts - self.updated_at;
+        (self.weighted_sum / self.total_weight.into() + time_since_last_update.into()).round_u128()
     }
 
     fn update(&mut self, ts: Timestamp) {
         let expected_mean = self.mean(ts);
-        self.weighted_sum = expected_mean * self.total_weight;
+        self.weighted_sum = BigDecimal::from(expected_mean) * self.total_weight.into();
         self.updated_at = ts;
     }
 
@@ -150,7 +152,7 @@ impl WeightedMeanLength {
 
     fn remove(&mut self, amount: Balance, length: Duration, ts: Timestamp) {
         self.update(ts);
-        self.weighted_sum -= amount * length as u128;
+        self.weighted_sum = self.weighted_sum - BigDecimal::from(amount) * length.into();
         self.total_weight -= amount;
     }
 }
