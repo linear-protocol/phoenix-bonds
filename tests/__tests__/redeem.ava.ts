@@ -98,7 +98,7 @@ test("Redeem LiNEAR", async (test) => {
     alice,
     NEAR.parse("1").toString()
   );
-  // alice should get LiNEAR whose value equals to exact alicePnearBalance NEAR
+  // alice should get LiNEAR whose value equals to exact 1 NEAR
   test.is(aliceRedeemedLinear, applyNearDecimals("1").div("1.02").toFixed(0));
 
   // day 17
