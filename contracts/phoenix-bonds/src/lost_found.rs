@@ -69,7 +69,10 @@ impl PhoenixBonds {
 
     pub fn claim_lost_and_found(&mut self) -> Promise {
         // 100 Tgas
-        self.assert_gas(Gas(20 * TGAS) + GAS_FT_TRANSFER_AND_CALLBACK);
+        require!(
+            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_FT_TRANSFER_AND_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
 
         let user_id = env::predecessor_account_id();
         let amount = self.linear_lost_and_found.remove(&user_id);

@@ -13,9 +13,9 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
-    near_bindgen, require, Gas,
+    near_bindgen, require,
     serde::{Deserialize, Serialize},
-    AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
+    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp};
 
@@ -129,7 +129,10 @@ impl PhoenixBonds {
     #[payable]
     pub fn bond(&mut self) -> Promise {
         // 120 Tgas
-        self.assert_gas(Gas(20 * TGAS) + GAS_DEPOSIT_AND_STAKE + GAS_BOND_CALLBACK);
+        require!(
+            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_DEPOSIT_AND_STAKE + GAS_BOND_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         // TODO pause
 
         let user_id = env::predecessor_account_id();
@@ -185,7 +188,10 @@ impl PhoenixBonds {
     #[payable]
     pub fn cancel(&mut self, note_id: u32) -> Promise {
         // 160 Tgas
-        self.assert_gas(Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_CANCEL_CALLBACK);
+        require!(
+            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_CANCEL_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         assert_one_yocto();
 
         let user_id = env::predecessor_account_id();
@@ -248,7 +254,10 @@ impl PhoenixBonds {
     #[payable]
     pub fn commit(&mut self, note_id: u32) -> Promise {
         // 90 Tgas
-        self.assert_gas(Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_COMMIT_CALLBACK);
+        require!(
+            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_COMMIT_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         assert_one_yocto();
 
         require!(
@@ -334,7 +343,10 @@ impl PhoenixBonds {
     #[payable]
     pub fn redeem(&mut self, amount: U128) -> Promise {
         // 160 Tgas
-        self.assert_gas(Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_REDEEM_CALLBACK);
+        require!(
+            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_REDEEM_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         assert_one_yocto();
 
         require!(
@@ -422,12 +434,6 @@ impl PhoenixBonds {
 
         self.linear_lost_and_found.insert(&user_id, linear_amount.0);
         0.into()
-    }
-}
-
-impl PhoenixBonds {
-    pub(crate) fn assert_gas(&self, required_gas: Gas) {
-        require!(env::prepaid_gas() >= required_gas, ERR_NOT_ENOUGH_GAS);
     }
 }
 
