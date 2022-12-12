@@ -5,7 +5,6 @@ import {
   bond,
   commit,
   daysToMs,
-  getBondNote,
   setLinearPrice,
   setTimestamp,
 } from "./common";

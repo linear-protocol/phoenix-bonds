@@ -89,9 +89,25 @@ export async function ftStorageDeposit(ft: NearAccount, account: NearAccount) {
   );
 }
 
+export async function getFtBalance(
+  ft: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return ft.view("ft_balance_of", { account_id: account.accountId });
+}
+
 export async function setTimestamp(phoenix: NearAccount, ts: number) {
   return phoenix.call(phoenix, "set_current_timestamp_ms", {
     ms: ts,
+  });
+}
+
+export async function getPnearPrice(
+  phoenix: NearAccount,
+  linearPrice: string
+): Promise<string> {
+  return phoenix.view("get_pnear_price", {
+    linear_price: linearPrice,
   });
 }
 
@@ -156,6 +172,24 @@ export async function commit(
     {
       attachedDeposit: NEAR.from("1"),
       gas: Gas.parse("90 Tgas"),
+    }
+  );
+}
+
+export async function redeem(
+  phoenix: NearAccount,
+  account: NearAccount,
+  amount: string
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "redeem",
+    {
+      amount,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("160 Tgas"),
     }
   );
 }

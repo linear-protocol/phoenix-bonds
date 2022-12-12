@@ -41,6 +41,7 @@ const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not
 const ERR_BOOTSTRAPING: &str = "Commit and redeem are not allowed now";
 const ERR_BAD_BOOTSTRAP_END: &str = "Bootstrap end time must be in the future";
 const ERR_NOT_ENOUGH_GAS: &str = "Not enough gas";
+const ERR_BURN_TOO_MANY: &str = "At least one pNEAR must be left";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -359,6 +360,10 @@ impl PhoenixBonds {
             self.ft.internal_unwrap_balance_of(&user_id) >= amount.0,
             ERR_NOT_ENOUGH_PNEAR_BALANCE
         );
+        require!(
+            self.pnear_total_supply() - amount.0 > ONE_PNEAR,
+            ERR_BURN_TOO_MANY
+        );
 
         self.get_linear_price().then(
             Self::ext(env::current_account_id())
@@ -378,6 +383,10 @@ impl PhoenixBonds {
         require!(
             self.ft.internal_unwrap_balance_of(&user_id) >= pnear_amount.0,
             ERR_NOT_ENOUGH_PNEAR_BALANCE
+        );
+        require!(
+            self.pnear_total_supply() - pnear_amount.0 > ONE_PNEAR,
+            ERR_BURN_TOO_MANY
         );
 
         // equivalent amount of NEAR that given pNEAR worth
