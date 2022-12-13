@@ -116,12 +116,13 @@ export async function bond(
   phoenix: NearAccount,
   amount: NEAR
 ): Promise<number> {
+  const storageDeposit = NEAR.parse("0.01");
   return account.call(
     phoenix,
     "bond",
     {},
     {
-      attachedDeposit: amount,
+      attachedDeposit: NEAR.from(amount).add(storageDeposit).toString(),
       gas: Gas.parse("120 Tgas"),
     }
   );

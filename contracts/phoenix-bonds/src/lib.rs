@@ -32,8 +32,10 @@ mod types;
 mod utils;
 
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
+const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
 
-const ERR_SMALL_BOND_AMOUNT: &str = "Bond requires at least 0.1 NEAR";
+const ERR_BOND_DEPOSIT: &str = "Bond requires 0.01 NEAR as storage deposit";
+const ERR_SMALL_BOND_AMOUNT: &str = "Bond amount must be at least 0.1 NEAR";
 const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
@@ -137,8 +139,12 @@ impl PhoenixBonds {
         // TODO pause
 
         let user_id = env::predecessor_account_id();
-        let bond_amount = env::attached_deposit();
 
+        require!(
+            env::attached_deposit() > BOND_STORAGE_DEPOSIT,
+            ERR_BOND_DEPOSIT
+        );
+        let bond_amount = env::attached_deposit() - BOND_STORAGE_DEPOSIT;
         require!(bond_amount >= MINIMUM_BOND_AMOUNT, ERR_SMALL_BOND_AMOUNT);
 
         // stake on linear
