@@ -9,7 +9,6 @@ import {
   ftStorageDeposit,
   ftTransfer,
   redeem,
-  setLinearPanic,
   setTimestamp,
 } from "./common";
 import { init } from "./init";
@@ -67,4 +66,17 @@ test("LiNEAR transfer failed when redeem", async (test) => {
     claimLostAndFound(phoenix, bob),
     "No lost and found LiNEAR to claim"
   );
+});
+
+test("LiNEAR transfer failed when claim lost&found", async (test) => {
+  const { alice, phoenix } = test.context.accounts;
+
+  const noteId = await bond(alice, phoenix, NEAR.parse("9999"));
+  // linear transfer would fail due to no storage deposit
+  const transferredAmount = await cancel(phoenix, alice, noteId);
+  test.is(transferredAmount, "0");
+
+  // linear transfer would fail due to no storage deposit
+  const claimedLostAndFound = await claimLostAndFound(phoenix, alice);
+  test.is(claimedLostAndFound, "0");
 });
