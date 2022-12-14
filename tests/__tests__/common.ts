@@ -141,6 +141,39 @@ export async function getBondNote(
   });
 }
 
+export async function notesCount(
+  phoenix: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return phoenix.view("notes_count", {
+    account_id: account.accountId,
+  });
+}
+
+export async function pendingNotesCount(
+  phoenix: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return phoenix.view("pending_notes_count", {
+    account_id: account.accountId,
+  });
+}
+
+export async function listPendingNotes(
+  phoenix: NearAccount,
+  account: NearAccount,
+  linearPrice: string,
+  offset: number,
+  limit: number
+): Promise<BondNote> {
+  return phoenix.view("list_pending_notes", {
+    account_id: account.accountId,
+    linear_price: linearPrice,
+    offset,
+    limit,
+  });
+}
+
 export async function cancel(
   phoenix: NearAccount,
   account: NearAccount,
