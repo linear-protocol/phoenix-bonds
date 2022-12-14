@@ -426,7 +426,7 @@ mod tests {
     ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let min_alpha: Duration = 0;
+        let min_alpha: Duration = 1;
         let target_mean_length: u64 = 15 * 86400 * 1000;
         let adjust_interval: u64 = 86400 * 1000;
         let adjust_rate = 100;

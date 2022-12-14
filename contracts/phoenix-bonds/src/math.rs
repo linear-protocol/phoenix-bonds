@@ -79,7 +79,7 @@ mod tests {
             900_000 * ONE_NEAR, // pending
             30_000 * ONE_NEAR,  // permanent
             10_000 * ONE_NEAR,  // treasury
-            0,
+            1,
             0,
         );
         let linear_price = 6 * ONE_NEAR / 5; // 1.2
@@ -97,7 +97,7 @@ mod tests {
             900_000 * ONE_NEAR, // pending
             30_000 * ONE_NEAR,  // permanent
             10_000 * ONE_NEAR,  // treasury
-            0,
+            1,
             0,
         );
         let linear_price = 6 * ONE_NEAR / 5; // 1.2
@@ -150,7 +150,7 @@ mod tests {
             900_000 * ONE_NEAR, // pending
             30_000 * ONE_NEAR,  // permanent
             10_000 * ONE_NEAR,  // treasury
-            0,
+            1,
             0,
         );
         contract.mint_pnear(&alice(), 60_000 * ONE_PNEAR, None);
