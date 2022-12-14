@@ -38,7 +38,7 @@ test("Cannot redeem with zero balance", async (test) => {
   );
 });
 
-test("Cannot redeem more than ones balance", async (test) => {
+test("Cannot redeem more than one's balance", async (test) => {
   const { alice, phoenix } = test.context.accounts;
   const noteId = await bond(alice, phoenix, NEAR.parse("100"));
 
