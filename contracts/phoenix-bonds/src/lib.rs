@@ -16,7 +16,7 @@ use near_sdk::{
     serde::{Deserialize, Serialize},
     AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
 };
-use types::{BasisPoint, Duration, StorageKey, Timestamp};
+use types::{BasisPoint, Duration, StorageKey, Timestamp, FULL_BASIS_POINT};
 
 mod accural;
 mod active_vector;
@@ -32,6 +32,7 @@ mod utils;
 
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 
+const ERR_INVALID_TAU: &str = "Invalid tau";
 const ERR_SMALL_BOND_AMOUNT: &str = "Bond requires at least 0.1 NEAR";
 const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
@@ -83,6 +84,10 @@ pub struct AccuralConfig {
     adjust_rate: BasisPoint,
 }
 
+pub(crate) fn assert_tau(tau: BasisPoint) {
+    require!(tau < FULL_BASIS_POINT, ERR_INVALID_TAU)
+}
+
 #[near_bindgen]
 impl PhoenixBonds {
     #[init]
@@ -97,6 +102,7 @@ impl PhoenixBonds {
             bootstrap_ends > current_timestamp_ms(),
             ERR_BAD_BOOTSTRAP_END
         );
+        assert_tau(tau);
 
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),

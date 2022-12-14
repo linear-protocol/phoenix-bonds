@@ -13,6 +13,7 @@ impl PhoenixBonds {
 
     #[payable]
     pub fn set_tau(&mut self, new_tau: BasisPoint) {
+        assert_tau(new_tau);
         self.assert_owner();
         self.tau = new_tau;
     }
