@@ -2,7 +2,7 @@ use crate::{
     interfaces::{ext_fungible_token, linear_contract},
     utils::*,
 };
-use accural::AccuralParameter;
+use accural::{AccuralConfig, AccuralParameter};
 use bond_note::{BondNote, BondNotes, BondStatus};
 use events::Event;
 use lost_found::LostAndFound;
@@ -12,9 +12,8 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
-    near_bindgen, require,
-    serde::{Deserialize, Serialize},
-    AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
+    near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
+    ONE_YOCTO,
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp};
 
@@ -73,16 +72,6 @@ pub struct PhoenixBonds {
     accural_param: AccuralParameter,
 }
 
-#[derive(Deserialize, Serialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct AccuralConfig {
-    alpha: Duration,
-    min_alpha: Duration,
-    target_mean_length: Duration,
-    adjust_interval: Duration,
-    adjust_rate: BasisPoint,
-}
-
 #[near_bindgen]
 impl PhoenixBonds {
     #[init]
@@ -97,6 +86,7 @@ impl PhoenixBonds {
             bootstrap_ends > current_timestamp_ms(),
             ERR_BAD_BOOTSTRAP_END
         );
+        accural.assert_valid();
 
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),
