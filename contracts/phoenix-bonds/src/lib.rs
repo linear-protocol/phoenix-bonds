@@ -406,8 +406,8 @@ impl PhoenixBonds {
             )
     }
 
-    /// We assume all LiNEAR token transfer will success,
-    /// if it failed, then those tokens will be moved to the lost and found pool
+    /// We assume all LiNEAR token transfer will succeed,
+    /// if it failed, then those tokens will be moved to the lost and found pool,
     /// instead of reverting contract state.
     /// Returns the amount of LiNEAR that was successfully transferred.
     #[private]
