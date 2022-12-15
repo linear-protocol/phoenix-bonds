@@ -37,13 +37,15 @@ define compile_test
 	@mkdir -p res
 endef
 
-test: test-unit test-integration
+test: test-unit 
+	NEAR_WORKSPACES_NO_LOGS=1 make test-integration
 
 test-unit: 
 	cargo test
 
 TEST_FILE ?= **
 LOGS ?=
+TEST_CONCURRENCY ?= 4
 
 test-integration: phoenix_test mock_linear
 	@mkdir -p ./tests/compiled-contracts/

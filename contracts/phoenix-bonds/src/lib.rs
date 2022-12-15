@@ -1,8 +1,9 @@
 use crate::{
     interfaces::{ext_fungible_token, linear_contract},
+    types::*,
     utils::*,
 };
-use accural::AccuralParameter;
+use accural::{AccuralConfig, AccuralParameter};
 use bond_note::{BondNote, BondNotes, BondStatus};
 use events::Event;
 use lost_found::LostAndFound;
@@ -12,9 +13,8 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
-    near_bindgen, require,
-    serde::{Deserialize, Serialize},
-    AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
+    near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
+    ONE_YOCTO,
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp, FULL_BASIS_POINT};
 
@@ -31,15 +31,19 @@ mod types;
 mod utils;
 
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
+const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
 
 const ERR_INVALID_TAU: &str = "Invalid tau";
-const ERR_SMALL_BOND_AMOUNT: &str = "Bond requires at least 0.1 NEAR";
+const ERR_BOND_DEPOSIT: &str = "Bond requires 0.01 NEAR as storage deposit";
+const ERR_SMALL_BOND_AMOUNT: &str = "Bond amount must be at least 0.1 NEAR";
 const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
 const ERR_BOOTSTRAPING: &str = "Commit and redeem are not allowed now";
 const ERR_BAD_BOOTSTRAP_END: &str = "Bootstrap end time must be in the future";
+const ERR_NOT_ENOUGH_GAS: &str = "Not enough gas";
+const ERR_BURN_TOO_MANY: &str = "At least one pNEAR must be left";
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
@@ -74,16 +78,6 @@ pub struct PhoenixBonds {
     accural_param: AccuralParameter,
 }
 
-#[derive(Deserialize, Serialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct AccuralConfig {
-    alpha: Duration,
-    min_alpha: Duration,
-    target_mean_length: Duration,
-    adjust_interval: Duration,
-    adjust_rate: BasisPoint,
-}
-
 pub(crate) fn assert_tau(tau: BasisPoint) {
     require!(tau < FULL_BASIS_POINT, ERR_INVALID_TAU)
 }
@@ -103,6 +97,7 @@ impl PhoenixBonds {
             ERR_BAD_BOOTSTRAP_END
         );
         assert_tau(tau);
+        accural.assert_valid();
 
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),
@@ -132,22 +127,30 @@ impl PhoenixBonds {
     /// Create a new bond by depositing NEAR
     #[payable]
     pub fn bond(&mut self) -> Promise {
-        // TODO assert gas
-        // TODO not paused
+        // 120 Tgas
+        require!(
+            env::prepaid_gas() >= GAS_BOND + GAS_DEPOSIT_AND_STAKE + GAS_BOND_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
+        // TODO pause
 
         let user_id = env::predecessor_account_id();
-        let bond_amount = env::attached_deposit();
 
+        require!(
+            env::attached_deposit() > BOND_STORAGE_DEPOSIT,
+            ERR_BOND_DEPOSIT
+        );
+        let bond_amount = env::attached_deposit() - BOND_STORAGE_DEPOSIT;
         require!(bond_amount >= MINIMUM_BOND_AMOUNT, ERR_SMALL_BOND_AMOUNT);
 
         // stake on linear
         linear_contract::ext(self.linear_address.clone())
-            .with_unused_gas_weight(6)
+            .with_static_gas(GAS_DEPOSIT_AND_STAKE)
             .with_attached_deposit(bond_amount)
             .deposit_and_stake_v2()
             .then(
                 Self::ext(env::current_account_id())
-                    .with_unused_gas_weight(4)
+                    .with_static_gas(GAS_BOND_CALLBACK)
                     .on_staked(user_id, U128(bond_amount)),
             )
     }
@@ -187,7 +190,11 @@ impl PhoenixBonds {
     /// Cancel a bond, will return corresponding LiNEAR tokens to the user
     #[payable]
     pub fn cancel(&mut self, note_id: u32) -> Promise {
-        // TODO assert gas
+        // 160 Tgas
+        require!(
+            env::prepaid_gas() >= GAS_CANCEL + GAS_GET_LINEAR_PRICE + GAS_CANCEL_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         assert_one_yocto();
 
         let user_id = env::predecessor_account_id();
@@ -200,7 +207,7 @@ impl PhoenixBonds {
 
         self.get_linear_price().then(
             Self::ext(env::current_account_id())
-                .with_unused_gas_weight(1)
+                .with_static_gas(GAS_CANCEL_CALLBACK)
                 .on_get_linear_price_for_cancel(user_id, note_id),
         )
     }
@@ -249,7 +256,11 @@ impl PhoenixBonds {
 
     #[payable]
     pub fn commit(&mut self, note_id: u32) -> Promise {
-        // TODO assert gas
+        // 90 Tgas
+        require!(
+            env::prepaid_gas() >= GAS_COMMIT + GAS_GET_LINEAR_PRICE + GAS_COMMIT_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         assert_one_yocto();
 
         require!(
@@ -266,7 +277,7 @@ impl PhoenixBonds {
 
         self.get_linear_price().then(
             Self::ext(env::current_account_id())
-                .with_unused_gas_weight(1)
+                .with_static_gas(GAS_COMMIT_CALLBACK)
                 .on_get_linear_price_for_commit(user_id, note_id),
         )
     }
@@ -334,7 +345,11 @@ impl PhoenixBonds {
 
     #[payable]
     pub fn redeem(&mut self, amount: U128) -> Promise {
-        // TODO assert gas
+        // 160 Tgas
+        require!(
+            env::prepaid_gas() >= GAS_REDEEM + GAS_GET_LINEAR_PRICE + GAS_REDEEM_CALLBACK,
+            ERR_NOT_ENOUGH_GAS
+        );
         assert_one_yocto();
 
         require!(
@@ -347,10 +362,14 @@ impl PhoenixBonds {
             self.ft.internal_unwrap_balance_of(&user_id) >= amount.0,
             ERR_NOT_ENOUGH_PNEAR_BALANCE
         );
+        require!(
+            self.pnear_total_supply() - amount.0 > ONE_PNEAR,
+            ERR_BURN_TOO_MANY
+        );
 
         self.get_linear_price().then(
             Self::ext(env::current_account_id())
-                .with_static_gas(1.into()) // TODO
+                .with_static_gas(GAS_REDEEM_CALLBACK)
                 .on_get_linear_price_for_redeem(user_id, amount),
         )
     }
@@ -366,6 +385,10 @@ impl PhoenixBonds {
         require!(
             self.ft.internal_unwrap_balance_of(&user_id) >= pnear_amount.0,
             ERR_NOT_ENOUGH_PNEAR_BALANCE
+        );
+        require!(
+            self.pnear_total_supply() - pnear_amount.0 > ONE_PNEAR,
+            ERR_BURN_TOO_MANY
         );
 
         // equivalent amount of NEAR that given pNEAR worth
@@ -389,7 +412,7 @@ impl PhoenixBonds {
 
     fn get_linear_price(&self) -> Promise {
         linear_contract::ext(self.linear_address.clone())
-            .with_static_gas(near_sdk::Gas(0)) // TODO gas
+            .with_static_gas(GAS_GET_LINEAR_PRICE)
             .ft_price()
     }
 
@@ -397,17 +420,15 @@ impl PhoenixBonds {
     /// If transfer failed, these LiNEAR will be moved to lost and found
     /// NOTE: Make sure LiNEAR balance is decreased before calling this!
     fn transfer_linear(&mut self, account_id: &AccountId, amount: Balance, memo: &str) -> Promise {
-        // TODO might change to static gas
-
         require!(amount > 0, ERR_INVALID_TRANSFER_AMOUNT);
 
         ext_fungible_token::ext(self.linear_address.clone())
-            .with_unused_gas_weight(5)
+            .with_static_gas(GAS_FT_TRANSFER)
             .with_attached_deposit(ONE_YOCTO)
             .ft_transfer(account_id.clone(), amount.into(), Some(memo.to_string()))
             .then(
                 Self::ext(env::current_account_id())
-                    .with_unused_gas_weight(5)
+                    .with_static_gas(GAS_FT_TRANSFER_CALLBACK)
                     .on_linear_transferred(account_id.clone(), amount.into()),
             )
     }
@@ -442,7 +463,7 @@ mod tests {
     ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let min_alpha: Duration = 0;
+        let min_alpha: Duration = 1;
         let target_mean_length: u64 = 15 * 86400 * 1000;
         let adjust_interval: u64 = 86400 * 1000;
         let adjust_rate = 100;

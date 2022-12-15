@@ -1,7 +1,9 @@
 use near_bigdecimal::BigDecimal;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    require, Balance, PanicOnDefault,
+    require,
+    serde::{Deserialize, Serialize},
+    Balance, PanicOnDefault,
 };
 use std::{
     cmp::{max, min},
@@ -13,8 +15,32 @@ use crate::{
     utils::{apply_basis_point, current_timestamp_ms},
 };
 
-const ERR_BAD_MIN_ALPHA: &str = "Min alpha lower init alpha";
+const ERR_BAD_MIN_ALPHA: &str = "Min alpha cannot be 0";
+const ERR_BAD_ALPHA: &str = "Alpha cannot be lower than min alpha";
+const ERR_BAD_TARGET_MEAN_LENGTH: &str = "Target mean length cannot be 0";
+const ERR_BAD_ADJUST_INTERVAL: &str = "Adjust interval cannot be 0";
+const ERR_BAD_ADJUST_RATE: &str = "Adjust rate must be less than 10000";
 const ERR_BAD_TIMESTAMP: &str = "Bad timestamp for computing mean";
+
+#[derive(Deserialize, Serialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AccuralConfig {
+    pub alpha: Duration,
+    pub min_alpha: Duration,
+    pub target_mean_length: Duration,
+    pub adjust_interval: Duration,
+    pub adjust_rate: BasisPoint,
+}
+
+impl AccuralConfig {
+    pub fn assert_valid(&self) {
+        require!(self.min_alpha > 0, ERR_BAD_MIN_ALPHA);
+        require!(self.alpha >= self.min_alpha, ERR_BAD_ALPHA);
+        require!(self.target_mean_length > 0, ERR_BAD_TARGET_MEAN_LENGTH);
+        require!(self.adjust_interval > 0, ERR_BAD_ADJUST_INTERVAL);
+        require!(self.adjust_rate < FULL_BASIS_POINT, ERR_BAD_ADJUST_RATE);
+    }
+}
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct AccuralParameter {
@@ -42,8 +68,6 @@ impl AccuralParameter {
         adjust_interval: Duration,
         adjust_rate: BasisPoint,
     ) -> AccuralParameter {
-        require!(init_alpha >= min_alpha, ERR_BAD_MIN_ALPHA);
-
         Self {
             alpha: init_alpha,
             min_alpha,
