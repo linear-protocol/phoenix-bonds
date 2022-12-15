@@ -47,7 +47,7 @@ TEST_FILE ?= **
 LOGS ?=
 TEST_CONCURRENCY ?= 4
 
-test-integration: phoenix_test mock_linear 
+test-integration: phoenix_test mock_linear
 	@mkdir -p ./tests/compiled-contracts/
 	@cp ./res/phoenix_bonds_test.wasm ./tests/compiled-contracts/
 	@cp ./res/mock_linear.wasm ./tests/compiled-contracts/
