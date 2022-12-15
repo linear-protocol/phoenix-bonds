@@ -57,6 +57,15 @@ impl PhoenixBonds {
     }
 }
 
+// -- Public view methods
+
+#[near_bindgen]
+impl PhoenixBonds {
+    pub fn get_pnear_price(&self, linear_price: U128) -> U128 {
+        self.pnear_price(linear_price.0).into()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use near_sdk::ONE_NEAR;
