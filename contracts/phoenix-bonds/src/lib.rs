@@ -3,7 +3,7 @@ use crate::{
     types::*,
     utils::*,
 };
-use accural::AccuralParameter;
+use accural::{AccuralConfig, AccuralParameter};
 use bond_note::{BondNote, BondNotes, BondStatus};
 use events::Event;
 use lost_found::LostAndFound;
@@ -13,9 +13,8 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
-    near_bindgen, require,
-    serde::{Deserialize, Serialize},
-    AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError, ONE_NEAR, ONE_YOCTO,
+    near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
+    ONE_YOCTO,
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp};
 
@@ -78,16 +77,6 @@ pub struct PhoenixBonds {
     accural_param: AccuralParameter,
 }
 
-#[derive(Deserialize, Serialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct AccuralConfig {
-    alpha: Duration,
-    min_alpha: Duration,
-    target_mean_length: Duration,
-    adjust_interval: Duration,
-    adjust_rate: BasisPoint,
-}
-
 #[near_bindgen]
 impl PhoenixBonds {
     #[init]
@@ -102,6 +91,7 @@ impl PhoenixBonds {
             bootstrap_ends > current_timestamp_ms(),
             ERR_BAD_BOOTSTRAP_END
         );
+        accural.assert_valid();
 
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),
@@ -133,7 +123,7 @@ impl PhoenixBonds {
     pub fn bond(&mut self) -> Promise {
         // 120 Tgas
         require!(
-            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_DEPOSIT_AND_STAKE + GAS_BOND_CALLBACK,
+            env::prepaid_gas() >= GAS_BOND + GAS_DEPOSIT_AND_STAKE + GAS_BOND_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
         // TODO pause
@@ -196,7 +186,7 @@ impl PhoenixBonds {
     pub fn cancel(&mut self, note_id: u32) -> Promise {
         // 160 Tgas
         require!(
-            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_CANCEL_CALLBACK,
+            env::prepaid_gas() >= GAS_CANCEL + GAS_GET_LINEAR_PRICE + GAS_CANCEL_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
         assert_one_yocto();
@@ -262,7 +252,7 @@ impl PhoenixBonds {
     pub fn commit(&mut self, note_id: u32) -> Promise {
         // 90 Tgas
         require!(
-            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_COMMIT_CALLBACK,
+            env::prepaid_gas() >= GAS_COMMIT + GAS_GET_LINEAR_PRICE + GAS_COMMIT_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
         assert_one_yocto();
@@ -351,7 +341,7 @@ impl PhoenixBonds {
     pub fn redeem(&mut self, amount: U128) -> Promise {
         // 160 Tgas
         require!(
-            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_GET_LINEAR_PRICE + GAS_REDEEM_CALLBACK,
+            env::prepaid_gas() >= GAS_REDEEM + GAS_GET_LINEAR_PRICE + GAS_REDEEM_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
         assert_one_yocto();
@@ -467,7 +457,7 @@ mod tests {
     ) -> PhoenixBonds {
         let owner = AccountId::new_unchecked("foo".into());
         let linear = AccountId::new_unchecked("bar".into());
-        let min_alpha: Duration = 0;
+        let min_alpha: Duration = 1;
         let target_mean_length: u64 = 15 * 86400 * 1000;
         let adjust_interval: u64 = 86400 * 1000;
         let adjust_rate = 100;

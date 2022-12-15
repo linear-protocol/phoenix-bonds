@@ -70,7 +70,7 @@ impl PhoenixBonds {
     pub fn claim_lost_and_found(&mut self) -> Promise {
         // 100 Tgas
         require!(
-            env::prepaid_gas() >= Gas(20 * TGAS) + GAS_FT_TRANSFER_AND_CALLBACK,
+            env::prepaid_gas() >= GAS_CLAIM + GAS_FT_TRANSFER_AND_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
 

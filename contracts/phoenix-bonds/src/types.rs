@@ -23,14 +23,19 @@ pub const PNEAR_DECIMALS: u8 = 24;
 pub const ONE_PNEAR: u128 = ONE_NEAR;
 
 // -- Gas
-pub const TGAS: u64 = 1_000_000_000_000;
+pub const TGAS: u64 = Gas::ONE_TERA.0;
 
+pub const GAS_BOND: Gas = Gas(20 * TGAS);
 pub const GAS_BOND_CALLBACK: Gas = Gas(50 * TGAS);
+pub const GAS_CANCEL: Gas = Gas(20 * TGAS);
 /// 120 Tgas
 pub const GAS_CANCEL_CALLBACK: Gas = Gas(40 * TGAS + GAS_FT_TRANSFER_AND_CALLBACK.0);
+pub const GAS_COMMIT: Gas = Gas(20 * TGAS);
 pub const GAS_COMMIT_CALLBACK: Gas = Gas(50 * TGAS);
+pub const GAS_REDEEM: Gas = Gas(20 * TGAS);
 /// 120 Tgas
 pub const GAS_REDEEM_CALLBACK: Gas = Gas(40 * TGAS + GAS_FT_TRANSFER_AND_CALLBACK.0);
+pub const GAS_CLAIM: Gas = Gas(20 * TGAS);
 
 pub const GAS_DEPOSIT_AND_STAKE: Gas = Gas(50 * TGAS);
 pub const GAS_GET_LINEAR_PRICE: Gas = Gas(20 * TGAS);

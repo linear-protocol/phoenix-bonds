@@ -80,7 +80,7 @@ async function initPhoenixBonds(root: NearAccount, linear: NearAccount) {
         bootstrap_ends: bootstrapEnds,
         accural: {
           alpha,
-          min_alpha: 0,
+          min_alpha: 1,
           target_mean_length: daysToMs(15),
           adjust_interval: daysToMs(1),
           adjust_rate: 100, // 1%
