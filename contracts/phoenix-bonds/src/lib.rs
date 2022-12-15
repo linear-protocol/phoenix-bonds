@@ -37,7 +37,7 @@ const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
-const ERR_BOOTSTRAPING: &str = "Commit and redeem are not allowed now";
+const ERR_BOOTSTRAPPING: &str = "Commit and redeem are not allowed now";
 const ERR_BAD_BOOTSTRAP_END: &str = "Bootstrap end time must be in the future";
 
 #[near_bindgen]
@@ -248,7 +248,7 @@ impl PhoenixBonds {
 
         require!(
             current_timestamp_ms() >= self.bootstrap_ends_at,
-            ERR_BOOTSTRAPING
+            ERR_BOOTSTRAPPING
         );
 
         let user_id = env::predecessor_account_id();
@@ -333,7 +333,7 @@ impl PhoenixBonds {
 
         require!(
             current_timestamp_ms() >= self.bootstrap_ends_at,
-            ERR_BOOTSTRAPING
+            ERR_BOOTSTRAPPING
         );
 
         let user_id = env::predecessor_account_id();
