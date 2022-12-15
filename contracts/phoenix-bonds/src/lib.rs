@@ -13,8 +13,8 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env, is_promise_success,
     json_types::U128,
-    near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
-    ONE_YOCTO,
+    near_bindgen, require, AccountId, Balance, Gas, PanicOnDefault, Promise, PromiseError,
+    ONE_NEAR, ONE_YOCTO,
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp};
 
@@ -439,6 +439,12 @@ impl PhoenixBonds {
 
         self.linear_lost_and_found.insert(&user_id, linear_amount.0);
         0.into()
+    }
+}
+
+impl PhoenixBonds {
+    pub(crate) fn assert_gas(&self, required_gas: Gas) {
+        require!(env::prepaid_gas() >= required_gas, ERR_NOT_ENOUGH_GAS);
     }
 }
 
