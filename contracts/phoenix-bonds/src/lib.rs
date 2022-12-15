@@ -56,18 +56,18 @@ pub struct PhoenixBonds {
     linear_balance: Balance,
     /// amount of NEAR that has been bonded but not yet claimed/canceled
     pending_pool_near_amount: Balance,
-    /// amout of NEAR that the protocol owns
+    /// amount of NEAR that the protocol owns
     permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
     treasury_pool_near_amount: Balance,
     /// max percentage of bond amount that goes to treasury pool when a user claims
     tau: BasisPoint,
 
-    /// amount of LiNEAR that was not sucessfully transferred
+    /// amount of LiNEAR that was not successfully transferred
     linear_lost_and_found: LostAndFound,
     /// bond note for each user
     bond_notes: BondNotes,
-    /// when bootstraping period ends, before which commit & redeem are disabled
+    /// when bootstrapping period ends, before which commit & redeem are disabled
     bootstrap_ends_at: Timestamp,
     /// helper module to calculate accural parameter (alpha)
     accural_param: AccuralParameter,
