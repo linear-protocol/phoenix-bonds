@@ -15,7 +15,7 @@ import { init } from "./init";
 
 const test = init();
 
-test("notes count increase when a new note is created", async (test) => {
+test("notes count increases when a new note is created", async (test) => {
   const { alice, phoenix } = test.context.accounts;
 
   test.deepEqual(await notesCount(phoenix, alice), 0);
@@ -27,7 +27,7 @@ test("notes count increase when a new note is created", async (test) => {
   }
 });
 
-test("pending notes count increase when a new note is created", async (test) => {
+test("pending notes count increases when a new note is created", async (test) => {
   const { alice, phoenix } = test.context.accounts;
 
   test.deepEqual(await pendingNotesCount(phoenix, alice), 0);
@@ -39,7 +39,7 @@ test("pending notes count increase when a new note is created", async (test) => 
   }
 });
 
-test("pending notes count decrease when a note is canceled", async (test) => {
+test("pending notes count decreases when a note is canceled", async (test) => {
   const { alice, phoenix } = test.context.accounts;
 
   test.deepEqual(await pendingNotesCount(phoenix, alice), 0);
@@ -54,7 +54,7 @@ test("pending notes count decrease when a note is canceled", async (test) => {
   test.deepEqual(await pendingNotesCount(phoenix, alice), noteCount - 1);
 });
 
-test("pending notes count decrease when a note is committed", async (test) => {
+test("pending notes count decreases when a note is committed", async (test) => {
   const { alice, phoenix } = test.context.accounts;
 
   test.deepEqual(await pendingNotesCount(phoenix, alice), 0);
