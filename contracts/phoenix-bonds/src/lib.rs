@@ -29,6 +29,7 @@ mod math;
 mod owner;
 mod types;
 mod utils;
+mod view;
 
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
