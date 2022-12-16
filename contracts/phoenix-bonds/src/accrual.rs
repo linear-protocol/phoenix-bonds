@@ -136,7 +136,7 @@ impl AccrualParameter {
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 struct WeightedMeanLength {
-    /// sum of (bond amount * bond length) for all pending bond
+    /// sum of (bond amount * bond length) for all pending bonds
     weighted_sum: BigDecimal,
     /// sum of bond amount for all pending bonds
     total_weight: u128,

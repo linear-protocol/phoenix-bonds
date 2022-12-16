@@ -65,7 +65,7 @@ pub struct PhoenixBonds {
     permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
     treasury_pool_near_amount: Balance,
-    /// max percentage of bond amount that goes to permanent pool when a user claims
+    /// max percentage of bond amount that goes to treasury pool when a user claims
     tau: BasisPoint,
 
     /// amount of LiNEAR that was not successfully transferred
@@ -433,8 +433,8 @@ impl PhoenixBonds {
             )
     }
 
-    /// We assume all LiNEAR token transfer will success,
-    /// if it failed, then those tokens will be moved to the lost and found pool
+    /// We assume all LiNEAR token transfer will succeed,
+    /// if it failed, then those tokens will be moved to the lost and found pool,
     /// instead of reverting contract state.
     /// Returns the amount of LiNEAR that was successfully transferred.
     #[private]
