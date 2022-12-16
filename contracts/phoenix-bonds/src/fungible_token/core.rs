@@ -3,6 +3,7 @@ use near_contract_standards::fungible_token::events::{FtBurn, FtMint};
 use near_sdk::{json_types::U128, AccountId, Balance, PromiseOrValue};
 
 near_contract_standards::impl_fungible_token_core!(PhoenixBonds, ft);
+near_contract_standards::impl_fungible_token_storage!(PhoenixBonds, ft);
 
 impl PhoenixBonds {
     pub(crate) fn mint_pnear(
