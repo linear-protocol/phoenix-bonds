@@ -3,7 +3,7 @@ use crate::{
     types::*,
     utils::*,
 };
-use accural::{AccuralConfig, AccuralParameter};
+use accrual::{AccrualConfig, AccrualParameter};
 use bond_note::{BondNote, BondNotes, BondStatus};
 use events::Event;
 use lost_found::LostAndFound;
@@ -18,7 +18,7 @@ use near_sdk::{
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp, FULL_BASIS_POINT};
 
-mod accural;
+mod accrual;
 mod active_vector;
 mod bond_note;
 mod events;
@@ -40,7 +40,7 @@ const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
-const ERR_BOOTSTRAPING: &str = "Commit and redeem are not allowed now";
+const ERR_BOOTSTRAPPING: &str = "Commit and redeem are not allowed now";
 const ERR_BAD_BOOTSTRAP_END: &str = "Bootstrap end time must be in the future";
 const ERR_NOT_ENOUGH_GAS: &str = "Not enough gas";
 const ERR_BURN_TOO_MANY: &str = "At least one pNEAR must be left";
@@ -61,21 +61,21 @@ pub struct PhoenixBonds {
     linear_balance: Balance,
     /// amount of NEAR that has been bonded but not yet claimed/canceled
     pending_pool_near_amount: Balance,
-    /// amout of NEAR that the protocol owns
+    /// amount of NEAR that the protocol owns
     permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
     treasury_pool_near_amount: Balance,
     /// max percentage of bond amount that goes to permanent pool when a user claims
     tau: BasisPoint,
 
-    /// amount of LiNEAR that was not sucessfully transferred
+    /// amount of LiNEAR that was not successfully transferred
     linear_lost_and_found: LostAndFound,
     /// bond note for each user
     bond_notes: BondNotes,
-    /// when bootstraping period ends, before which commit & redeem are disabled
+    /// when bootstrapping period ends, before which commit & redeem are disabled
     bootstrap_ends_at: Timestamp,
-    /// helper module to calculate accural parameter (alpha)
-    accural_param: AccuralParameter,
+    /// helper module to calculate accrual parameter (alpha)
+    accrual_param: AccrualParameter,
 }
 
 pub(crate) fn assert_tau(tau: BasisPoint) {
@@ -90,14 +90,14 @@ impl PhoenixBonds {
         linear_address: AccountId,
         tau: BasisPoint,
         bootstrap_ends: Timestamp,
-        accural: AccuralConfig,
+        accrual: AccrualConfig,
     ) -> Self {
         require!(
             bootstrap_ends > current_timestamp_ms(),
             ERR_BAD_BOOTSTRAP_END
         );
         assert_tau(tau);
-        accural.assert_valid();
+        accrual.assert_valid();
 
         Self {
             ft: FungibleToken::new(StorageKey::FungibleToken),
@@ -112,12 +112,12 @@ impl PhoenixBonds {
             linear_lost_and_found: LostAndFound::new(),
             bond_notes: BondNotes::new(),
             bootstrap_ends_at: bootstrap_ends,
-            accural_param: AccuralParameter::new(
-                accural.alpha,
-                accural.min_alpha,
-                accural.target_mean_length,
-                accural.adjust_interval,
-                accural.adjust_rate,
+            accrual_param: AccrualParameter::new(
+                accrual.alpha,
+                accrual.min_alpha,
+                accrual.target_mean_length,
+                accrual.adjust_interval,
+                accrual.adjust_rate,
             ),
         }
     }
@@ -166,7 +166,7 @@ impl PhoenixBonds {
             self.pending_pool_near_amount += bond_amount.0;
             self.linear_balance += linear_amount.0;
 
-            self.accural_param
+            self.accrual_param
                 .weighted_mean_insert(bond_amount.0, current_timestamp_ms());
 
             let note = self.bond_notes.insert_new_note(&user_id, bond_amount.0);
@@ -234,7 +234,7 @@ impl PhoenixBonds {
         self.linear_balance -= refund_linear;
 
         let current_timestamp = current_timestamp_ms();
-        self.accural_param.weighted_mean_remove(
+        self.accrual_param.weighted_mean_remove(
             bond_note.bond_amount(),
             bond_note.length(current_timestamp),
             current_timestamp,
@@ -265,7 +265,7 @@ impl PhoenixBonds {
 
         require!(
             current_timestamp_ms() >= self.bootstrap_ends_at,
-            ERR_BOOTSTRAPING
+            ERR_BOOTSTRAPPING
         );
 
         let user_id = env::predecessor_account_id();
@@ -325,7 +325,7 @@ impl PhoenixBonds {
         self.permanent_pool_near_amount += permanent_gained_near_amount;
         self.pending_pool_near_amount -= bond_amount;
 
-        self.accural_param
+        self.accrual_param
             .weighted_mean_remove(bond_amount, note_length, current_timestamp);
 
         self.mint_pnear(&user_id, pnear_to_mint, Some("Commit Bond"));
@@ -354,7 +354,7 @@ impl PhoenixBonds {
 
         require!(
             current_timestamp_ms() >= self.bootstrap_ends_at,
-            ERR_BOOTSTRAPING
+            ERR_BOOTSTRAPPING
         );
 
         let user_id = env::predecessor_account_id();
@@ -472,7 +472,7 @@ mod tests {
             linear,
             tau,
             1,
-            AccuralConfig {
+            AccrualConfig {
                 alpha,
                 min_alpha,
                 target_mean_length,
