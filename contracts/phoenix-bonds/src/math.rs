@@ -30,7 +30,7 @@ impl PhoenixBonds {
         length: Duration,
         current_timestamp: Timestamp,
     ) -> Balance {
-        let alpha = self.accural_param.current_alpha(current_timestamp);
+        let alpha = self.accrual_param.current_alpha(current_timestamp);
         (BigDecimal::from(value) * length.into() / (length + alpha).into()).round_u128()
     }
 

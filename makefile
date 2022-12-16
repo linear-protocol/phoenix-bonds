@@ -25,6 +25,7 @@ mock_linear: contracts/mock-linear
 lint:
 	cargo fmt -- --check
 	cargo clippy --tests -- -D clippy::all
+	npx cspell --words-only --unique "**"
 
 define compile_release
 	@rustup target add wasm32-unknown-unknown
