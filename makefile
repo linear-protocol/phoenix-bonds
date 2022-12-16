@@ -25,6 +25,7 @@ mock_linear: contracts/mock-linear
 lint:
 	cargo fmt -- --check
 	cargo clippy --tests -- -D clippy::all
+	npx cspell --words-only --unique "**"
 
 define compile_release
 	@rustup target add wasm32-unknown-unknown
@@ -37,13 +38,15 @@ define compile_test
 	@mkdir -p res
 endef
 
-test: test-unit test-integration
+test: test-unit 
+	NEAR_WORKSPACES_NO_LOGS=1 make test-integration
 
 test-unit: 
 	cargo test
 
 TEST_FILE ?= **
 LOGS ?=
+TEST_CONCURRENCY ?= 4
 
 test-integration: phoenix_test mock_linear
 	@mkdir -p ./tests/compiled-contracts/

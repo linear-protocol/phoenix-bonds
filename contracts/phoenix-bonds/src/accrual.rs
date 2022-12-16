@@ -1,7 +1,9 @@
 use near_bigdecimal::BigDecimal;
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
-    require, Balance, PanicOnDefault,
+    require,
+    serde::{Deserialize, Serialize},
+    Balance, PanicOnDefault,
 };
 use std::{
     cmp::{max, min},
@@ -13,11 +15,35 @@ use crate::{
     utils::{apply_basis_point, current_timestamp_ms},
 };
 
-const ERR_BAD_MIN_ALPHA: &str = "Min alpha lower init alpha";
+const ERR_BAD_MIN_ALPHA: &str = "Min alpha cannot be 0";
+const ERR_BAD_ALPHA: &str = "Alpha cannot be lower than min alpha";
+const ERR_BAD_TARGET_MEAN_LENGTH: &str = "Target mean length cannot be 0";
+const ERR_BAD_ADJUST_INTERVAL: &str = "Adjust interval cannot be 0";
+const ERR_BAD_ADJUST_RATE: &str = "Adjust rate must be less than 10000";
 const ERR_BAD_TIMESTAMP: &str = "Bad timestamp for computing mean";
 
+#[derive(Deserialize, Serialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct AccrualConfig {
+    pub alpha: Duration,
+    pub min_alpha: Duration,
+    pub target_mean_length: Duration,
+    pub adjust_interval: Duration,
+    pub adjust_rate: BasisPoint,
+}
+
+impl AccrualConfig {
+    pub fn assert_valid(&self) {
+        require!(self.min_alpha > 0, ERR_BAD_MIN_ALPHA);
+        require!(self.alpha >= self.min_alpha, ERR_BAD_ALPHA);
+        require!(self.target_mean_length > 0, ERR_BAD_TARGET_MEAN_LENGTH);
+        require!(self.adjust_interval > 0, ERR_BAD_ADJUST_INTERVAL);
+        require!(self.adjust_rate < FULL_BASIS_POINT, ERR_BAD_ADJUST_RATE);
+    }
+}
+
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-pub struct AccuralParameter {
+pub struct AccrualParameter {
     /// last updated alpha value
     alpha: u64,
     /// minimum value that alpha could decrease to
@@ -34,16 +60,14 @@ pub struct AccuralParameter {
     mean_length: WeightedMeanLength,
 }
 
-impl AccuralParameter {
+impl AccrualParameter {
     pub fn new(
         init_alpha: u64,
         min_alpha: u64,
         target_mean_length: u64,
         adjust_interval: Duration,
         adjust_rate: BasisPoint,
-    ) -> AccuralParameter {
-        require!(init_alpha >= min_alpha, ERR_BAD_MIN_ALPHA);
-
+    ) -> AccrualParameter {
         Self {
             alpha: init_alpha,
             min_alpha,
@@ -231,8 +255,8 @@ mod tests {
         assert_eq!(va.mean(ts), 49 * ONE_DAY_MS as u128 / 3);
     }
 
-    fn prepare_accural_param() -> AccuralParameter {
-        AccuralParameter::new(
+    fn prepare_accrual_param() -> AccrualParameter {
+        AccrualParameter::new(
             INIT_ALPHA,
             0,
             15 * ONE_DAY_MS,
@@ -242,146 +266,146 @@ mod tests {
     }
 
     #[test]
-    fn test_accural_param_basic() {
-        let mut accural = prepare_accural_param();
+    fn test_accrual_param_basic() {
+        let mut accrual = prepare_accrual_param();
 
         // first insert 100 near at day 0
-        accural.weighted_mean_insert(100 * ONE_NEAR, 0);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, 0);
 
         // day 1
         let ts = ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
 
         // day 14
         let ts = 14 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
 
         // day 15
         let ts = 15 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
 
         // day 16
         let ts = 16 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA * 99 / 100);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA * 99 / 100);
 
         // day 18
         let ts = 18 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 251501500); // 3 days * 0.99^3
-        accural.weighted_mean_insert(100 * ONE_NEAR, ts); // insert another 100 near at day 18, the mean length should be 9 days now
+        assert_eq!(accrual.current_alpha(ts), 251501500); // 3 days * 0.99^3
+        accrual.weighted_mean_insert(100 * ONE_NEAR, ts); // insert another 100 near at day 18, the mean length should be 9 days now
 
         // day 19
         let ts = 19 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 251501500);
+        assert_eq!(accrual.current_alpha(ts), 251501500);
 
         // day 20
         let ts = 20 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 251501500);
+        assert_eq!(accrual.current_alpha(ts), 251501500);
         // remove the second 100 near at day 20, this makes the mean length 20 days
-        accural.weighted_mean_remove(100 * ONE_NEAR, 2 * ONE_DAY_MS, ts);
+        accrual.weighted_mean_remove(100 * ONE_NEAR, 2 * ONE_DAY_MS, ts);
         // alpha won't be affected immediately
-        assert_eq!(accural.current_alpha(ts), 251501500);
+        assert_eq!(accrual.current_alpha(ts), 251501500);
 
         // day 21
         let ts = 21 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 251501500 * 99 / 100);
+        assert_eq!(accrual.current_alpha(ts), 251501500 * 99 / 100);
     }
 
     #[test]
     fn test_alpha_when_mean_length_below_target() {
-        let mut accural = prepare_accural_param();
+        let mut accrual = prepare_accrual_param();
 
         // first insert 100 near at day 0
-        accural.weighted_mean_insert(100 * ONE_NEAR, 0);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, 0);
 
         // day 14
         let ts = 14 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
         // insert another 100 near
-        accural.weighted_mean_insert(100 * ONE_NEAR, ts);
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, ts);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
 
         // day 22
         let ts = 22 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
         // remove first 100 near, whose length is 22 days
-        accural.weighted_mean_remove(100 * ONE_NEAR, 22 * ONE_DAY_MS, ts);
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        accrual.weighted_mean_remove(100 * ONE_NEAR, 22 * ONE_DAY_MS, ts);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
 
         // day 29
         let ts = 29 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
     }
 
     #[test]
     fn test_alpha_when_mean_length_above_target() {
-        let mut accural = prepare_accural_param();
+        let mut accrual = prepare_accrual_param();
 
         // first insert 100 near at day 0
-        accural.weighted_mean_insert(100 * ONE_NEAR, 0);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, 0);
 
         // day 16
         let ts = 16 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 99 * INIT_ALPHA / 100);
+        assert_eq!(accrual.current_alpha(ts), 99 * INIT_ALPHA / 100);
 
         // day 17.5
         let ts = 17 * ONE_DAY_MS + HALF_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 254041920); // INIT_ALPHA * 0.99^2
+        assert_eq!(accrual.current_alpha(ts), 254041920); // INIT_ALPHA * 0.99^2
                                                           // insert 1 near
-        accural.weighted_mean_insert(ONE_NEAR, ts);
-        assert_eq!(accural.current_alpha(ts), 254041920); // INIT_ALPHA * 0.99^2
+        accrual.weighted_mean_insert(ONE_NEAR, ts);
+        assert_eq!(accrual.current_alpha(ts), 254041920); // INIT_ALPHA * 0.99^2
 
         // day 20.5
         let ts = 20 * ONE_DAY_MS + HALF_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 246496620); // INIT_ALPHA * 0.99^5
+        assert_eq!(accrual.current_alpha(ts), 246496620); // INIT_ALPHA * 0.99^5
                                                           // remove second 1 near
-        accural.weighted_mean_remove(ONE_NEAR, 3 * ONE_DAY_MS, ts);
-        assert_eq!(accural.current_alpha(ts), 246496620); // INIT_ALPHA * 0.99^5
+        accrual.weighted_mean_remove(ONE_NEAR, 3 * ONE_DAY_MS, ts);
+        assert_eq!(accrual.current_alpha(ts), 246496620); // INIT_ALPHA * 0.99^5
 
         // day 21
         let ts = 21 * ONE_DAY_MS + HALF_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 244031653); // INIT_ALPHA * 0.99^6
+        assert_eq!(accrual.current_alpha(ts), 244031653); // INIT_ALPHA * 0.99^6
     }
 
     #[test]
     fn test_alpha_when_mean_length_increased_above_target() {
-        let mut accural = prepare_accural_param();
+        let mut accrual = prepare_accrual_param();
 
         // first insert 100 near at day 0
-        accural.weighted_mean_insert(100 * ONE_NEAR, 0);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, 0);
 
         // day 14, insert another 100 near
         let ts = 14 * ONE_DAY_MS;
-        accural.weighted_mean_insert(100 * ONE_NEAR, ts);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, ts);
 
         // day 16, remove second 100 near
         let ts = 16 * ONE_DAY_MS;
-        accural.weighted_mean_remove(100 * ONE_NEAR, 2 * ONE_DAY_MS, ts);
-        assert_eq!(accural.current_alpha(ts), INIT_ALPHA);
+        accrual.weighted_mean_remove(100 * ONE_NEAR, 2 * ONE_DAY_MS, ts);
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA);
 
         // day 17
         let ts = 17 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 99 * INIT_ALPHA / 100); // remember the target was exceeded at day 16
+        assert_eq!(accrual.current_alpha(ts), 99 * INIT_ALPHA / 100); // remember the target was exceeded at day 16
     }
 
     #[test]
     fn test_alpha_when_mean_length_decreased_below_target() {
-        let mut accural = prepare_accural_param();
+        let mut accrual = prepare_accrual_param();
 
         // first insert 100 near at day 0
-        accural.weighted_mean_insert(100 * ONE_NEAR, 0);
+        accrual.weighted_mean_insert(100 * ONE_NEAR, 0);
 
         // day 12, insert another 1 near
         let ts = 12 * ONE_DAY_MS;
-        accural.weighted_mean_insert(ONE_NEAR, ts);
+        accrual.weighted_mean_insert(ONE_NEAR, ts);
 
         // day 20.5, current mean length is 20.38 days
         let ts = 20 * ONE_DAY_MS + HALF_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 246496620); // init_alpha * 0.99^5
+        assert_eq!(accrual.current_alpha(ts), 246496620); // init_alpha * 0.99^5
                                                           // remove first 100 near
-        accural.weighted_mean_remove(100 * ONE_NEAR, 20 * ONE_DAY_MS + HALF_DAY_MS, ts);
+        accrual.weighted_mean_remove(100 * ONE_NEAR, 20 * ONE_DAY_MS + HALF_DAY_MS, ts);
 
         // day 23
         let ts = 23 * ONE_DAY_MS;
-        assert_eq!(accural.current_alpha(ts), 246496620); // should be same as day 20.5, when mean length decreased below target
+        assert_eq!(accrual.current_alpha(ts), 246496620); // should be same as day 20.5, when mean length decreased below target
     }
 }

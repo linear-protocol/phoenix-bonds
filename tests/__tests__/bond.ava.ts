@@ -1,6 +1,12 @@
-import { NEAR, NearAccount } from "near-workspaces";
+import { Gas, NEAR, NearAccount } from "near-workspaces";
 import Big from "big.js";
-import { assertFailure, bond, BondNote, getBondNote } from "./common";
+import {
+  assertFailure,
+  bond,
+  BondNote,
+  getBondNote,
+  getLinearPrice,
+} from "./common";
 import { init, tau } from "./init";
 
 const test = init();
@@ -8,16 +14,31 @@ const test = init();
 test("Bond with small amount", async (test) => {
   const { alice, phoenix } = test.context.accounts;
 
+  // bond less than 0.01
+  await assertFailure(
+    test,
+    alice.call(
+      phoenix,
+      "bond",
+      {},
+      {
+        gas: Gas.parse("120 Tgas"),
+        attachedDeposit: NEAR.parse("0.009").toString(),
+      }
+    ),
+    "Bond requires 0.01 NEAR as storage deposit"
+  );
+
   await assertFailure(
     test,
     bond(alice, phoenix, NEAR.parse("0.09")),
-    "Bond requires at least 0.1 NEAR"
+    "Bond amount must be at least 0.1 NEAR"
   );
 });
 
 test("Bond with multiple accounts", async (test) => {
   const { alice, bob, phoenix, linear } = test.context.accounts;
-  const linearPrice: string = await linear.view("ft_price", {});
+  const linearPrice = await getLinearPrice(linear);
 
   const noteId = await bond(alice, phoenix, NEAR.parse("100"));
   const aliceNote = await getBondNote(phoenix, alice, noteId, linearPrice);
@@ -30,7 +51,7 @@ test("Bond with multiple accounts", async (test) => {
 
 test("Bond multiple times", async (test) => {
   const { alice, phoenix, linear } = test.context.accounts;
-  const linearPrice: string = await linear.view("ft_price", {});
+  const linearPrice = await getLinearPrice(linear);
 
   const noteId1 = await bond(alice, phoenix, NEAR.parse("200"));
   const note1 = await getBondNote(phoenix, alice, noteId1, linearPrice);
