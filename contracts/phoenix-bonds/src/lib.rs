@@ -16,7 +16,7 @@ use near_sdk::{
     near_bindgen, require, AccountId, Balance, PanicOnDefault, Promise, PromiseError, ONE_NEAR,
     ONE_YOCTO,
 };
-use types::{BasisPoint, Duration, StorageKey, Timestamp};
+use types::{BasisPoint, Duration, StorageKey, Timestamp, FULL_BASIS_POINT};
 
 mod accrual;
 mod active_vector;
@@ -33,6 +33,7 @@ mod utils;
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
 
+const ERR_INVALID_TAU: &str = "Invalid tau";
 const ERR_BOND_DEPOSIT: &str = "Bond requires 0.01 NEAR as storage deposit";
 const ERR_SMALL_BOND_AMOUNT: &str = "Bond amount must be at least 0.1 NEAR";
 const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
@@ -77,6 +78,10 @@ pub struct PhoenixBonds {
     accrual_param: AccrualParameter,
 }
 
+pub(crate) fn assert_tau(tau: BasisPoint) {
+    require!(tau < FULL_BASIS_POINT, ERR_INVALID_TAU)
+}
+
 #[near_bindgen]
 impl PhoenixBonds {
     #[init]
@@ -91,6 +96,7 @@ impl PhoenixBonds {
             bootstrap_ends > current_timestamp_ms(),
             ERR_BAD_BOOTSTRAP_END
         );
+        assert_tau(tau);
         accrual.assert_valid();
 
         Self {
