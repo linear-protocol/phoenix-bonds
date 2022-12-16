@@ -78,7 +78,7 @@ async function initPhoenixBonds(root: NearAccount, linear: NearAccount) {
         linear_address: linear.accountId,
         tau: tau * 100 * 100, // 0.03 -> 3% -> 300 basis point
         bootstrap_ends: bootstrapEnds,
-        accural: {
+        accrual: {
           alpha,
           min_alpha: 1,
           target_mean_length: daysToMs(15),
