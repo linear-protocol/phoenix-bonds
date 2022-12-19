@@ -29,6 +29,7 @@ mod math;
 mod owner;
 mod types;
 mod utils;
+mod view;
 
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
@@ -65,7 +66,7 @@ pub struct PhoenixBonds {
     permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
     treasury_pool_near_amount: Balance,
-    /// max percentage of bond amount that goes to treasury pool when a user claims
+    /// percentage of bond amount that goes to treasury pool when a user claims
     tau: BasisPoint,
 
     /// amount of LiNEAR that was not successfully transferred
