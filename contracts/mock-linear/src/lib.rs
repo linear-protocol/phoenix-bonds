@@ -4,7 +4,7 @@ use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     env,
     json_types::U128,
-    near_bindgen, PanicOnDefault, ONE_NEAR,
+    near_bindgen, require, PanicOnDefault, ONE_NEAR,
 };
 
 mod ft;
@@ -14,6 +14,7 @@ mod ft;
 pub struct MockLinear {
     linear_price: u128,
     tokens: FungibleToken,
+    panic: bool,
 }
 
 #[near_bindgen]
@@ -23,6 +24,7 @@ impl MockLinear {
         Self {
             linear_price: ONE_NEAR,
             tokens: FungibleToken::new(b't'),
+            panic: false,
         }
     }
 
@@ -30,6 +32,7 @@ impl MockLinear {
 
     #[payable]
     pub fn deposit_and_stake_v2(&mut self) -> U128 {
+        require!(!self.panic, "LiNEAR Panic");
         let account_id = env::predecessor_account_id();
         let amount = env::attached_deposit();
         let shares =
@@ -48,5 +51,9 @@ impl MockLinear {
 
     pub fn set_ft_price(&mut self, price: U128) {
         self.linear_price = price.0;
+    }
+
+    pub fn set_panic(&mut self, panic: bool) {
+        self.panic = panic;
     }
 }

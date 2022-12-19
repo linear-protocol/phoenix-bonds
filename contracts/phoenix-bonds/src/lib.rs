@@ -24,10 +24,12 @@ mod bond_note;
 mod events;
 mod fungible_token;
 mod interfaces;
+mod legacy;
 mod lost_found;
 mod math;
 mod owner;
 mod types;
+mod upgrade;
 mod utils;
 mod view;
 

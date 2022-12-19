@@ -68,6 +68,8 @@ function parseError(e: any): string {
   }
 }
 
+// -- mock linear methods
+
 export async function setLinearPrice(linear: NearAccount, price: string) {
   return linear.call(linear, "set_ft_price", {
     price,
@@ -76,6 +78,12 @@ export async function setLinearPrice(linear: NearAccount, price: string) {
 
 export async function getLinearPrice(linear: NearAccount): Promise<string> {
   return linear.view("ft_price", {});
+}
+
+export async function setLinearPanic(linear: NearAccount, panic: boolean) {
+  return linear.call(linear, "set_panic", {
+    panic,
+  });
 }
 
 export async function ftStorageDeposit(ft: NearAccount, account: NearAccount) {
@@ -94,6 +102,27 @@ export async function getFtBalance(
   account: NearAccount
 ): Promise<string> {
   return ft.view("ft_balance_of", { account_id: account.accountId });
+}
+
+// -- phoenix bonds methods
+
+export async function ftTransfer(
+  ft: NearAccount,
+  from: NearAccount,
+  to: NearAccount,
+  amount: string
+) {
+  return from.call(
+    ft,
+    "ft_transfer",
+    {
+      receiver_id: to.accountId,
+      amount,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+    }
+  );
 }
 
 export async function setTimestamp(phoenix: NearAccount, ts: number) {
@@ -224,6 +253,27 @@ export async function redeem(
     {
       attachedDeposit: NEAR.from("1"),
       gas: Gas.parse("160 Tgas"),
+    }
+  );
+}
+
+export async function getUserLostAndFound(
+  phoenix: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return phoenix.view("user_lost_and_found", { account_id: account.accountId });
+}
+
+export async function claimLostAndFound(
+  phoenix: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "claim_lost_and_found",
+    {},
+    {
+      gas: Gas.parse("100 Tgas"),
     }
   );
 }
