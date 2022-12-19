@@ -42,6 +42,11 @@ pub enum Event {
         account_id: AccountId,
         amount: U128,
     },
+    // treasury withdraw event
+    TreasuryWithdrawn {
+        near_amount: U128,
+        linear_amount: U128,
+    },
 }
 
 impl Event {
