@@ -36,6 +36,7 @@ mod view;
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
 
+const ERR_PAUSED: &str = "Contract paused. Please try again later";
 const ERR_INVALID_TAU: &str = "Invalid tau";
 const ERR_BOND_DEPOSIT: &str = "Bond requires 0.01 NEAR as storage deposit";
 const ERR_SMALL_BOND_AMOUNT: &str = "Bond amount must be at least 0.1 NEAR";
@@ -135,7 +136,7 @@ impl PhoenixBonds {
             env::prepaid_gas() >= GAS_BOND + GAS_DEPOSIT_AND_STAKE + GAS_BOND_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
-        // TODO pause
+        require!(!self.paused, ERR_PAUSED);
 
         let user_id = env::predecessor_account_id();
 
@@ -199,6 +200,7 @@ impl PhoenixBonds {
             ERR_NOT_ENOUGH_GAS
         );
         assert_one_yocto();
+        require!(!self.paused, ERR_PAUSED);
 
         let user_id = env::predecessor_account_id();
         let bond_note = self.bond_notes.get_user_note(&user_id, note_id);
@@ -265,6 +267,7 @@ impl PhoenixBonds {
             ERR_NOT_ENOUGH_GAS
         );
         assert_one_yocto();
+        require!(!self.paused, ERR_PAUSED);
 
         require!(
             current_timestamp_ms() >= self.bootstrap_ends_at,
@@ -354,6 +357,7 @@ impl PhoenixBonds {
             ERR_NOT_ENOUGH_GAS
         );
         assert_one_yocto();
+        require!(!self.paused, ERR_PAUSED);
 
         require!(
             current_timestamp_ms() >= self.bootstrap_ends_at,
