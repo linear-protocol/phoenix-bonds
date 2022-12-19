@@ -1,4 +1,5 @@
-import { NEAR, NearAccount, TransactionResult } from "near-workspaces";
+import Big from "big.js";
+import { Gas, NEAR, NearAccount, TransactionResult } from "near-workspaces";
 
 export interface BondNote {
   id: number;
@@ -10,6 +11,14 @@ export interface BondNote {
   status: string;
   cap: string;
   accrued_pnear: string;
+}
+
+export function daysToMs(n: number) {
+  return n * 24 * 3600 * 1000;
+}
+
+export function applyNearDecimals(n: string) {
+  return Big(n).mul(1e24);
 }
 
 export async function assertFailure(
@@ -59,8 +68,47 @@ function parseError(e: any): string {
   }
 }
 
-export function daysToMs(days: number) {
-  return days * 24 * 3600 * 1000;
+export async function setLinearPrice(linear: NearAccount, price: string) {
+  return linear.call(linear, "set_ft_price", {
+    price,
+  });
+}
+
+export async function getLinearPrice(linear: NearAccount): Promise<string> {
+  return linear.view("ft_price", {});
+}
+
+export async function ftStorageDeposit(ft: NearAccount, account: NearAccount) {
+  return account.call(
+    ft,
+    "storage_deposit",
+    {},
+    {
+      attachedDeposit: NEAR.parse("0.1"),
+    }
+  );
+}
+
+export async function getFtBalance(
+  ft: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return ft.view("ft_balance_of", { account_id: account.accountId });
+}
+
+export async function setTimestamp(phoenix: NearAccount, ts: number) {
+  return phoenix.call(phoenix, "set_current_timestamp_ms", {
+    ms: ts,
+  });
+}
+
+export async function getPnearPrice(
+  phoenix: NearAccount,
+  linearPrice: string
+): Promise<string> {
+  return phoenix.view("get_pnear_price", {
+    linear_price: linearPrice,
+  });
 }
 
 export async function bond(
@@ -68,12 +116,14 @@ export async function bond(
   phoenix: NearAccount,
   amount: NEAR
 ): Promise<number> {
+  const storageDeposit = NEAR.parse("0.01");
   return account.call(
     phoenix,
     "bond",
     {},
     {
-      attachedDeposit: amount,
+      attachedDeposit: NEAR.from(amount).add(storageDeposit).toString(),
+      gas: Gas.parse("120 Tgas"),
     }
   );
 }
@@ -89,4 +139,91 @@ export async function getBondNote(
     note_id: noteId,
     linear_price: linearPrice,
   });
+}
+
+export async function notesCount(
+  phoenix: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return phoenix.view("notes_count", {
+    account_id: account.accountId,
+  });
+}
+
+export async function pendingNotesCount(
+  phoenix: NearAccount,
+  account: NearAccount
+): Promise<string> {
+  return phoenix.view("pending_notes_count", {
+    account_id: account.accountId,
+  });
+}
+
+export async function listPendingNotes(
+  phoenix: NearAccount,
+  account: NearAccount,
+  linearPrice: string,
+  offset: number,
+  limit: number
+): Promise<BondNote> {
+  return phoenix.view("list_pending_notes", {
+    account_id: account.accountId,
+    linear_price: linearPrice,
+    offset,
+    limit,
+  });
+}
+
+export async function cancel(
+  phoenix: NearAccount,
+  account: NearAccount,
+  noteId: number
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "cancel",
+    {
+      note_id: noteId,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("160 Tgas"),
+    }
+  );
+}
+
+export async function commit(
+  phoenix: NearAccount,
+  account: NearAccount,
+  noteId: number
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "commit",
+    {
+      note_id: noteId,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("90 Tgas"),
+    }
+  );
+}
+
+export async function redeem(
+  phoenix: NearAccount,
+  account: NearAccount,
+  amount: string
+): Promise<string> {
+  return account.call(
+    phoenix,
+    "redeem",
+    {
+      amount,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("160 Tgas"),
+    }
+  );
 }

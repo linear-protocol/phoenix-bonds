@@ -11,7 +11,7 @@ use near_sdk::{
     json_types::U128,
     near_bindgen, require,
     serde::Serialize,
-    AccountId, Balance, PanicOnDefault,
+    AccountId, Balance, BlockHeight, PanicOnDefault,
 };
 
 pub const ERR_BOND_NOTE_NOT_EXIST: &str = "Bond note doesn't exist";
@@ -34,7 +34,9 @@ pub struct BondNote {
     bond_amount: Balance,
     committed_pnear_amount: Balance,
     created_at: Timestamp,
+    created_block_height: BlockHeight,
     settled_at: Timestamp,
+    settled_block_height: BlockHeight,
     status: BondStatus,
 }
 
@@ -66,6 +68,7 @@ impl BondNote {
         );
         self.status = BondStatus::Cancelled;
         self.settled_at = current_timestamp_ms();
+        self.settled_block_height = env::block_height();
     }
 
     pub fn commit(&mut self, pnear_amount: Balance) {
@@ -76,6 +79,7 @@ impl BondNote {
         self.status = BondStatus::Committed;
         self.committed_pnear_amount = pnear_amount;
         self.settled_at = current_timestamp_ms();
+        self.settled_block_height = env::block_height();
     }
 }
 
@@ -137,7 +141,9 @@ impl BondNotes {
             bond_amount,
             committed_pnear_amount: 0,
             created_at: current_timestamp_ms(),
+            created_block_height: env::block_height(),
             settled_at: 0,
+            settled_block_height: 0,
             status: BondStatus::Pending,
         };
 
@@ -166,7 +172,9 @@ pub struct BondNoteInfo {
     #[serde(with = "u128_dec_format")]
     committed_pnear_amount: Balance,
     created_at: Timestamp,
+    created_block_height: BlockHeight,
     settled_at: Timestamp,
+    settled_block_height: BlockHeight,
     status: BondStatus,
 
     #[serde(with = "u128_dec_format")]
@@ -183,7 +191,9 @@ impl PhoenixBonds {
             bond_amount: note.bond_amount,
             committed_pnear_amount: note.committed_pnear_amount,
             created_at: note.created_at,
+            created_block_height: note.created_block_height,
             settled_at: note.settled_at,
+            settled_block_height: note.settled_block_height,
             status: note.status.clone(),
             cap: self.note_cap(note, linear_price),
             accrued_pnear: self.note_accrued_pnear(note, linear_price, current_timestamp_ms()),
@@ -240,7 +250,9 @@ pub mod tests {
             bond_amount,
             committed_pnear_amount: 0,
             created_at,
+            created_block_height: 0,
             settled_at: 0,
+            settled_block_height: 0,
             status: BondStatus::Pending,
         }
     }
