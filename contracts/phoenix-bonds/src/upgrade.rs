@@ -40,7 +40,7 @@ mod migration {
         let current_id = env::current_account_id().as_bytes().to_vec();
         let migrate_method_name = b"migrate".to_vec();
         let get_summary_method_name = b"get_summary".to_vec();
-        let get_summary_args = b"{\"linear_price\": \"1000000000000000000000000\"}".to_vec();
+        let get_summary_args = b"{\"linear_price\":\"1000000000000000000000000\"}".to_vec();
         unsafe {
             // Load input (wasm code) into register 0.
             sys::input(0);
