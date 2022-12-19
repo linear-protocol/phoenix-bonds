@@ -36,7 +36,7 @@ mod view;
 const MINIMUM_BOND_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 NEAR
 const BOND_STORAGE_DEPOSIT: u128 = ONE_NEAR / 100; // 0.01 NEAR
 
-const ERR_PAUSED: &str = "Contract paused, please try again later";
+const ERR_PAUSED: &str = "Contract paused. Please try again later";
 const ERR_INVALID_TAU: &str = "Invalid tau";
 const ERR_BOND_DEPOSIT: &str = "Bond requires 0.01 NEAR as storage deposit";
 const ERR_SMALL_BOND_AMOUNT: &str = "Bond amount must be at least 0.1 NEAR";
