@@ -66,7 +66,7 @@ pub struct PhoenixBonds {
     permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
     treasury_pool_near_amount: Balance,
-    /// max percentage of bond amount that goes to treasury pool when a user claims
+    /// percentage of bond amount that goes to treasury pool when a user claims
     tau: BasisPoint,
 
     /// amount of LiNEAR that was not successfully transferred
