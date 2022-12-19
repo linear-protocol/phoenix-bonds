@@ -9,7 +9,7 @@ test("Stake at LiNEAR price 1", async (test) => {
 
   const shares: string = await alice.call(
     linear,
-    "deposit_and_stake_v2",
+    "deposit_and_stake",
     {},
     {
       attachedDeposit: stakeAmount,
@@ -31,7 +31,7 @@ test("Stake at LiNEAR price 1.2", async (test) => {
 
   const shares: string = await alice.call(
     linear,
-    "deposit_and_stake_v2",
+    "deposit_and_stake",
     {},
     {
       attachedDeposit: stakeAmount,
@@ -47,7 +47,7 @@ test("Transfer LiNEAR", async (test) => {
 
   await alice.call(
     linear,
-    "deposit_and_stake_v2",
+    "deposit_and_stake",
     {},
     {
       attachedDeposit: stakeAmount,
@@ -57,7 +57,7 @@ test("Transfer LiNEAR", async (test) => {
   // to make bob registered
   await bob.call(
     linear,
-    "deposit_and_stake_v2",
+    "deposit_and_stake",
     {},
     {
       attachedDeposit: stakeAmount,
