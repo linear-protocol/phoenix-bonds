@@ -73,6 +73,7 @@ impl PhoenixBonds {
             env::prepaid_gas() >= GAS_CLAIM + GAS_FT_TRANSFER_AND_CALLBACK,
             ERR_NOT_ENOUGH_GAS
         );
+        require!(!self.paused, ERR_PAUSED);
 
         let user_id = env::predecessor_account_id();
         let amount = self.linear_lost_and_found.remove(&user_id);

@@ -17,6 +17,20 @@ impl PhoenixBonds {
         self.assert_owner();
         self.tau = new_tau;
     }
+
+    #[payable]
+    pub fn pause(&mut self) {
+        self.assert_owner();
+        require!(!self.paused, "Already paused");
+        self.paused = true;
+    }
+
+    #[payable]
+    pub fn resume(&mut self) {
+        self.assert_owner();
+        require!(self.paused, "Not paused");
+        self.paused = false;
+    }
 }
 
 impl PhoenixBonds {
