@@ -76,6 +76,17 @@ test("Cancel should receive equivalent LiNEAR", async (test) => {
   await verifyCancel(test, phoenix, linear, alice, noteId2);
 });
 
+test("Cancel before any bond", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  await ftStorageDeposit(linear, alice);
+
+  await assertFailure(
+    test,
+    cancel(phoenix, alice, 0),
+    "Bond note doesn't exist"
+  );
+});
+
 test("Cancel wrong note id", async (test) => {
   const { alice, phoenix, linear } = test.context.accounts;
   await ftStorageDeposit(linear, alice);
