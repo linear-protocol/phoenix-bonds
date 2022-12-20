@@ -36,6 +36,9 @@ pub const GAS_REDEEM: Gas = Gas(20 * TGAS);
 /// 120 Tgas
 pub const GAS_REDEEM_CALLBACK: Gas = Gas(40 * TGAS + GAS_FT_TRANSFER_AND_CALLBACK.0);
 pub const GAS_CLAIM: Gas = Gas(20 * TGAS);
+pub const GAS_WITHDRAW: Gas = Gas(20 * TGAS);
+/// 120 Tgas
+pub const GAS_WITHDRAW_CALLBACK: Gas = Gas(40 * TGAS + GAS_FT_TRANSFER_AND_CALLBACK.0);
 
 pub const GAS_DEPOSIT_AND_STAKE: Gas = Gas(50 * TGAS);
 pub const GAS_GET_LINEAR_PRICE: Gas = Gas(20 * TGAS);
