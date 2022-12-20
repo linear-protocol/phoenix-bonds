@@ -47,6 +47,17 @@ test("Cannot commit twice", async (test) => {
   );
 });
 
+test("Commit before any bond", async (test) => {
+  const { alice, phoenix } = test.context.accounts;
+
+  await setTimestamp(phoenix, daysToMs(20));
+  await assertFailure(
+    test,
+    commit(phoenix, alice, 0),
+    "Bond note doesn't exist"
+  );
+});
+
 test("Commit wrong note id", async (test) => {
   const { alice, phoenix } = test.context.accounts;
 
