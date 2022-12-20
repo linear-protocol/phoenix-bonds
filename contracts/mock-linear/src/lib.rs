@@ -31,7 +31,7 @@ impl MockLinear {
     // -- public LiNEAR methods
 
     #[payable]
-    pub fn deposit_and_stake_v2(&mut self) -> U128 {
+    pub fn deposit_and_stake(&mut self) -> U128 {
         require!(!self.panic, "LiNEAR Panic");
         let account_id = env::predecessor_account_id();
         let amount = env::attached_deposit();

@@ -152,7 +152,7 @@ impl PhoenixBonds {
         linear_contract::ext(self.linear_address.clone())
             .with_static_gas(GAS_DEPOSIT_AND_STAKE)
             .with_attached_deposit(bond_amount)
-            .deposit_and_stake_v2()
+            .deposit_and_stake()
             .then(
                 Self::ext(env::current_account_id())
                     .with_static_gas(GAS_BOND_CALLBACK)
