@@ -184,7 +184,8 @@ impl PhoenixBonds {
 
             Some(note.id())
         } else {
-            Promise::new(user_id).transfer(bond_amount.0);
+            // refund user deposited NEAR
+            Promise::new(user_id).transfer(bond_amount.0 + BOND_STORAGE_DEPOSIT);
             None
         }
     }
