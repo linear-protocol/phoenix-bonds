@@ -6,8 +6,29 @@ import {
   BondNote,
   getBondNote,
   getLinearPrice,
+  setLinearPanic,
 } from "./common";
 import { init, tau } from "./init";
+
+function verifyNewBondNote(
+  test: any,
+  note: BondNote,
+  account: NearAccount,
+  amount: string,
+  tau: number
+) {
+  test.is(note.account_id, account.accountId);
+  test.is(note.bond_amount, amount.toString());
+  test.is(note.committed_pnear_amount, "0");
+  test.is(note.settled_at, 0);
+  test.is(note.status, "Pending");
+  test.is(
+    note.cap,
+    Big(amount)
+      .mul(1 - tau)
+      .toFixed()
+  );
+}
 
 const test = init();
 
@@ -62,22 +83,22 @@ test("Bond multiple times", async (test) => {
   verifyNewBondNote(test, note2, alice, NEAR.parse("9999").toString(), tau);
 });
 
-function verifyNewBondNote(
-  test: any,
-  note: BondNote,
-  account: NearAccount,
-  amount: string,
-  tau: number
-) {
-  test.is(note.account_id, account.accountId);
-  test.is(note.bond_amount, amount.toString());
-  test.is(note.committed_pnear_amount, "0");
-  test.is(note.settled_at, 0);
-  test.is(note.status, "Pending");
-  test.is(
-    note.cap,
-    Big(amount)
-      .mul(1 - tau)
-      .toFixed()
+test("Bond failed and all deposits are refunded", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+
+  // bond will panic
+  await setLinearPanic(linear, true);
+
+  const balanceBefore = await alice.availableBalance();
+  // 900K NEAR + 0.01 NEAR storage fee
+  const noteId: any = await bond(alice, phoenix, NEAR.parse("900000.01"));
+  test.is(noteId, null);
+
+  const balanceAfter = await alice.availableBalance();
+  // the gas cost should be less than 0.002N
+  test.true(
+    Big(balanceBefore.sub(balanceAfter).toString()).lt(
+      Big(NEAR.parse("0.002").toString())
+    )
   );
-}
+});
