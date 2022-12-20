@@ -177,6 +177,7 @@ impl PhoenixBonds {
 
             Event::Bond {
                 account_id: user_id,
+                note_id: note.id(),
                 bond_amount,
                 linear_amount,
             }

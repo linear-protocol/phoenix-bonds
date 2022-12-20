@@ -13,6 +13,7 @@ pub enum Event {
     // user events
     Bond {
         account_id: AccountId,
+        note_id: u32,
         bond_amount: U128,
         linear_amount: U128,
     },
@@ -71,13 +72,14 @@ mod tests {
     fn bond() {
         Event::Bond {
             account_id: alice(),
+            note_id: 1,
             bond_amount: U128(1000),
             linear_amount: U128(1000),
         }
         .emit();
         assert_eq!(
             test_utils::get_logs()[0],
-            r#"EVENT_JSON:{"standard":"phoenix_bonds","version":"1.0.0","event":"bond","data":[{"account_id":"alice","bond_amount":"1000","linear_amount":"1000"}]}"#
+            r#"EVENT_JSON:{"standard":"phoenix_bonds","version":"1.0.0","event":"bond","data":[{"account_id":"alice","note_id":1,"bond_amount":"1000","linear_amount":"1000"}]}"#
         );
     }
 }
