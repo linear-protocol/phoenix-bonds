@@ -42,6 +42,7 @@ const ERR_BOND_DEPOSIT: &str = "Bond requires 0.01 NEAR as storage deposit";
 const ERR_SMALL_BOND_AMOUNT: &str = "Bond amount must be at least 0.1 NEAR";
 const ERR_BOND_NOT_PENDING: &str = "Bond is not pending";
 const ERR_GET_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
+const ERR_BAD_REDEEM_AMOUNT: &str = "Redeem amount cannot be 0";
 const ERR_NOT_ENOUGH_PNEAR_BALANCE: &str = "Not enough pNEAR balance";
 const ERR_INVALID_TRANSFER_AMOUNT: &str = "Amount of LiNEAR to transfer must not be zero";
 const ERR_BOOTSTRAPPING: &str = "Commit and redeem are not allowed now";
@@ -364,6 +365,8 @@ impl PhoenixBonds {
             current_timestamp_ms() >= self.bootstrap_ends_at,
             ERR_BOOTSTRAPPING
         );
+
+        require!(amount.0 > 0, ERR_BAD_REDEEM_AMOUNT);
 
         let user_id = env::predecessor_account_id();
         require!(
