@@ -84,7 +84,7 @@ impl PhoenixBonds {
             }
             .emit();
         } else {
-            self.treasury_pool_near_amount = near_amount.0;
+            self.treasury_pool_near_amount += near_amount.0;
             self.linear_balance += linear_amount.0;
         }
     }
