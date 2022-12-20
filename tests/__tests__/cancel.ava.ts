@@ -3,6 +3,7 @@ import {
   assertFailure,
   bond,
   cancel,
+  commit,
   daysToMs,
   ftStorageDeposit,
   getBondNote,
@@ -107,6 +108,22 @@ test("Cancel same note twice", async (test) => {
   const noteId = await bond(alice, phoenix, NEAR.parse("2000"));
   await verifyCancel(test, phoenix, linear, alice, noteId);
 
+  await assertFailure(
+    test,
+    cancel(phoenix, alice, noteId),
+    "Bond is not pending"
+  );
+});
+
+test("Cancel after commit", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  await ftStorageDeposit(linear, alice);
+
+  const noteId = await bond(alice, phoenix, NEAR.parse("2000"));
+
+  // set timestamp
+  await setTimestamp(phoenix, daysToMs(20));
+  await commit(phoenix, alice, noteId);
   await assertFailure(
     test,
     cancel(phoenix, alice, noteId),
