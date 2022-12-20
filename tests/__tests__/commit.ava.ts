@@ -123,3 +123,36 @@ test("Commit multiple bonds", async (test) => {
     "316221549314521496073472772"
   );
 });
+
+test("Commit after 10 years", async (test) => {
+  const { alice, phoenix } = test.context.accounts;
+
+  // bond at day 20
+  await setTimestamp(phoenix, daysToMs(20));
+  const noteId = await bond(alice, phoenix, NEAR.parse("1000"));
+
+  // commit after 10 years
+  await setTimestamp(phoenix, daysToMs(365 * 10 + 20));
+  const pnearAmount = await commit(phoenix, alice, noteId);
+
+  const summary: any = await phoenix.view("get_summary", {
+    linear_price: NEAR.parse("1.01").toString(),
+  });
+  // current alpha has decreased to the minimum after 10 years
+  const curAlpha = summary.alpha;
+  test.is(
+    curAlpha,
+    1 // the minimum alpha
+  );
+
+  // since it's the first commit, pnear price would be 1
+  const TEN_YEARS = daysToMs(365 * 10);
+  test.is(
+    pnearAmount,
+    applyNearDecimals("1000")
+      .mul(1 - tau)
+      .mul(TEN_YEARS)
+      .div(TEN_YEARS + curAlpha)
+      .toFixed(0)
+  );
+});
