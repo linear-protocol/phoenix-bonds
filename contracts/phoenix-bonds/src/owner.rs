@@ -55,6 +55,7 @@ impl PhoenixBonds {
     ) -> Promise {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         let near_amount = self.treasury_pool_near_amount;
+        require!(near_amount > 0, "Nothing to withdraw");
         let linear_amount = near2linear(near_amount, linear_price.0);
 
         self.treasury_pool_near_amount = 0;
