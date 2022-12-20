@@ -27,13 +27,24 @@ test("Cannot redeem when bootstrapping", async (test) => {
   );
 });
 
-test("Cannot redeem with zero balance", async (test) => {
+test("Cannot redeem with zero pNEAR amount", async (test) => {
   const { alice, phoenix } = test.context.accounts;
   await setTimestamp(phoenix, daysToMs(20));
 
   await assertFailure(
     test,
     redeem(phoenix, alice, "0"),
+    "Redeem amount cannot be 0"
+  );
+});
+
+test("Cannot redeem with zero balance", async (test) => {
+  const { alice, phoenix } = test.context.accounts;
+  await setTimestamp(phoenix, daysToMs(20));
+
+  await assertFailure(
+    test,
+    redeem(phoenix, alice, "1"),
     "The account alice.test.near is not registered"
   );
 });
