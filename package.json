@@ -22,7 +22,9 @@
   "dependencies": {
     "ava": "^5.1.0",
     "big.js": "^6.2.1",
+    "near-api-js": "^1.1.0",
     "near-workspaces": "^3.2.2",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "yargs": "^17.6.2"
   }
 }
