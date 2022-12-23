@@ -66,6 +66,10 @@ impl<T: Active + BorshSerialize + BorshDeserialize> ActiveVector<T> {
         self.active_items.iter().copied().collect()
     }
 
+    pub fn get_item_indices(&self) -> Vec<u32> {
+        (0..self.items.len()).collect()
+    }
+
     pub fn update(&mut self, index: u32, item: T) {
         let active = item.is_active();
         if active && !self.active_items.contains(&index) {
