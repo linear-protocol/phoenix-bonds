@@ -56,7 +56,7 @@ impl PhoenixBonds {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         let near_amount = self.treasury_pool_near_amount;
         require!(near_amount > 0, "Nothing to withdraw");
-        // Due to precision, the calculated withdrawn amount can be slightly more than the actual received,
+        // Due to precision, the calculated withdrawn amount can be slightly more than the actual balance,
         // use `min` here to avoid subtraction overflow
         let linear_amount = min(
             near2linear(near_amount, linear_price.0),
