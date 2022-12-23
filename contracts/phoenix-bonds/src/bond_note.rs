@@ -128,6 +128,13 @@ impl BondNotes {
             .unwrap_or_default()
     }
 
+    pub fn get_user_note_ids(&self, account_id: &AccountId) -> Vec<u32> {
+        self.notes
+            .get(account_id)
+            .map(|v| v.get_item_indices())
+            .unwrap_or_default()
+    }
+
     pub fn insert_new_note(&mut self, account_id: &AccountId, bond_amount: Balance) -> BondNote {
         let mut user_notes = self
             .notes
@@ -230,6 +237,23 @@ impl PhoenixBonds {
     ) -> Vec<BondNoteInfo> {
         self.bond_notes
             .get_user_pending_note_ids(&account_id)
+            .iter()
+            .skip(offset.try_into().unwrap())
+            .take(limit.try_into().unwrap())
+            .map(|id| self.bond_notes.get_user_note(&account_id, *id))
+            .map(|note| self.build_note_info(&note, linear_price.0))
+            .collect()
+    }
+
+    pub fn list_notes(
+        &self,
+        account_id: AccountId,
+        linear_price: U128,
+        offset: u32,
+        limit: u32,
+    ) -> Vec<BondNoteInfo> {
+        self.bond_notes
+            .get_user_note_ids(&account_id)
             .iter()
             .skip(offset.try_into().unwrap())
             .take(limit.try_into().unwrap())
