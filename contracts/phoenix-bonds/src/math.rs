@@ -8,10 +8,18 @@ use near_bigdecimal::*;
 impl PhoenixBonds {
     pub(crate) fn reserve_pool_near_amount(&self, linear_price: Balance) -> Balance {
         let protocol_owned_near_amount = linear2near(self.linear_balance, linear_price);
-        protocol_owned_near_amount
-            - self.pending_pool_near_amount
-            - self.permanent_pool_near_amount
-            - self.treasury_pool_near_amount
+        if protocol_owned_near_amount
+            > self.pending_pool_near_amount
+                + self.permanent_pool_near_amount
+                + self.treasury_pool_near_amount
+        {
+            protocol_owned_near_amount
+                - self.pending_pool_near_amount
+                - self.permanent_pool_near_amount
+                - self.treasury_pool_near_amount
+        } else {
+            0_u128
+        }
     }
 
     pub(crate) fn pnear_price(&self, linear_price: Balance) -> Balance {
