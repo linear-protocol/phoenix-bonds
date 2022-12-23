@@ -18,6 +18,8 @@ use near_sdk::{
 };
 use types::{BasisPoint, Duration, StorageKey, Timestamp, FULL_BASIS_POINT};
 
+use std::cmp::min;
+
 mod accrual;
 mod active_vector;
 mod bond_note;
@@ -230,7 +232,12 @@ impl PhoenixBonds {
         let linear_price = linear_price.expect(ERR_GET_LINEAR_PRICE);
         let mut bond_note = self.bond_notes.get_user_note(&user_id, note_id);
 
-        let refund_linear = near2linear(bond_note.bond_amount(), linear_price.0);
+        // Due to precision, the calculated refund amount can be slightly more than the actual balance,
+        // use `min` here to avoid subtraction overflow
+        let refund_linear = min(
+            near2linear(bond_note.bond_amount(), linear_price.0),
+            self.linear_balance,
+        );
 
         // update user note
         bond_note.cancel();
@@ -405,7 +412,12 @@ impl PhoenixBonds {
 
         // equivalent amount of NEAR that given pNEAR worth
         let equivalent_near_amount = pnear2near(pnear_amount.0, self.pnear_price(linear_price.0));
-        let redeemed_linear = near2linear(equivalent_near_amount, linear_price.0);
+        // Due to precision, the calculated redeemed amount can be slightly more than the actual balance,
+        // use `min` here to avoid subtraction overflow
+        let redeemed_linear = min(
+            near2linear(equivalent_near_amount, linear_price.0),
+            self.linear_balance,
+        );
 
         self.linear_balance -= redeemed_linear;
         self.burn_pnear(&user_id, pnear_amount.0, Some("Redeem pNEAR"));
