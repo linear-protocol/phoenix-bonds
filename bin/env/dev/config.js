@@ -10,11 +10,11 @@ module.exports = {
   ownerId: 'phoenix-dev1.testnet',
   linearAddress: 'linear-protocol.testnet',
   tau: 0.03,
-  bootstrapLength: 15, // days
+  bootstrapLength: 5, // hours
   accrual: {
     alpha: 4.4, // days
     minAlpha: 0.1, // days
-    targetMeanLength: 15, // days
+    targetMeanLength: 2, // days
     adjustInterval: 24, // hours
     adjustRate: 0.01,
   }
