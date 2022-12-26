@@ -1,7 +1,7 @@
 module.exports = {
   network: {
     networkId: "testnet",
-    nodeUrl: process.env.NODE_URL_TESTNET || "https://rpc.testnet.near.org",
+    nodeUrl: process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL || "https://rpc.testnet.near.org",
     walletUrl: "https://wallet.testnet.near.org",
     helperUrl: "https://helper.testnet.near.org",
     explorerUrl: "https://explorer.testnet.near.org",
