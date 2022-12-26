@@ -43,11 +43,11 @@ exports.handler = async function (yargs) {
   };
   console.dir(args);
 
-  // await account.functionCall({
-  //   contractId,
-  //   methodName: 'new',
-  //   args,
-  // });
+  await account.functionCall({
+    contractId,
+    methodName: 'new',
+    args,
+  });
 
   console.log('contract initialized');
 }

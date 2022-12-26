@@ -6,8 +6,8 @@ module.exports = {
     helperUrl: "https://helper.testnet.near.org",
     explorerUrl: "https://explorer.testnet.near.org",
   },
-  contractId: 'phoenix-dev1.testnet',
-  ownerId: 'phoenix-dev1.testnet',
+  contractId: 'phoenix-dev2.testnet',
+  ownerId: 'phoenix-dev2.testnet',
   linearAddress: 'linear-protocol.testnet',
   tau: 0.03,
   bootstrapLength: 5, // hours
