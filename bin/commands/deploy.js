@@ -10,10 +10,13 @@ exports.builder = yargs => {
       describe: 'Env name',
       default: 'dev'
     })
+    .option('noInit', {
+      describe: 'Skip init'
+    })
 }
 
 exports.handler = async function (yargs) {
-  const { env, } = yargs;
+  const { env, noInit } = yargs;
   const near = await initNear.init(env);
 
   const config = getEnvConfig(env);
@@ -22,6 +25,8 @@ exports.handler = async function (yargs) {
 
   await account.deployContract(fs.readFileSync('res/phoenix_bonds.wasm'));
   console.log(`Contract deployed to ${contractId}`);
+
+  if (noInit) return;
 
   const tau = parseInt(config.tau * 10000);
   const bootstrap_ends = (parseInt(Date.now() / 3600000) + 1) * 3600000 
