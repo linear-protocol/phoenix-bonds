@@ -264,7 +264,8 @@ impl PhoenixBonds {
         .emit();
 
         // transfer LiNEAR to user
-        self.transfer_linear(&user_id, refund_linear, "Cancel Bond")
+        let memo = format!("Cancel Bond. user_id = {}, note_id = {}", user_id, note_id);
+        self.transfer_linear(&user_id, refund_linear, memo.as_str())
     }
 
     // ======== Commit ========
@@ -429,7 +430,11 @@ impl PhoenixBonds {
         }
         .emit();
 
-        self.transfer_linear(&user_id, redeemed_linear, "pNEAR Redeem")
+        let memo = format!(
+            "pNEAR Redeem. user_id = {}, amount = {}",
+            user_id, pnear_amount.0
+        );
+        self.transfer_linear(&user_id, redeemed_linear, memo.as_str())
     }
 
     // ======== Helper Methods ========

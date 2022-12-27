@@ -80,6 +80,10 @@ impl PhoenixBonds {
 
         require!(amount > 0, ERR_NO_LINEAR_TO_CLAIM);
 
-        self.transfer_linear(&user_id, amount, "Claim lost and found")
+        let memo = format!(
+            "Claim lost and found. user_id = {}, amount = {}",
+            user_id, amount
+        );
+        self.transfer_linear(&user_id, amount, memo.as_str())
     }
 }
