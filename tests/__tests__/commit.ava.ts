@@ -150,7 +150,7 @@ test("Commit after 10 years", async (test) => {
     linear_price: NEAR.parse("1.01").toString(),
   });
   // current alpha has decreased to the minimum after 10 years
-  const curAlpha = summary.alpha;
+  const curAlpha = summary.accrual_parameter.alpha;
   test.is(
     curAlpha,
     1 // the minimum alpha
