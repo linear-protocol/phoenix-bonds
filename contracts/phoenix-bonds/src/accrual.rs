@@ -45,19 +45,19 @@ impl AccrualConfig {
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct AccrualParameter {
     /// last updated alpha value
-    alpha: u64,
+    pub alpha: u64,
     /// minimum value that alpha could decrease to
-    min_alpha: u64,
+    pub min_alpha: u64,
     /// target weighted mean length of all pending bonds
-    target_mean_length: u64,
+    pub target_mean_length: u64,
     /// alpha decreases each interval after mean length exceeds target
-    adjust_interval: Duration,
+    pub adjust_interval: Duration,
     /// how much should alpha decrease in each interval
-    adjust_rate: BasisPoint,
+    pub adjust_rate: BasisPoint,
     /// when was alpha last updated
-    last_updated_at: Timestamp,
+    pub last_updated_at: Timestamp,
     /// volume weighted mean bonding length
-    mean_length: WeightedMeanLength,
+    pub mean_length: WeightedMeanLength,
 }
 
 impl AccrualParameter {
@@ -135,7 +135,7 @@ impl AccrualParameter {
 }
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
-struct WeightedMeanLength {
+pub struct WeightedMeanLength {
     /// sum of (bond amount * bond length) for all pending bonds
     weighted_sum: BigDecimal,
     /// sum of bond amount for all pending bonds
@@ -154,7 +154,7 @@ impl WeightedMeanLength {
     }
 
     /// Get volume weighted mean bonding length in ms at given timestamp
-    fn mean(&self, ts: Timestamp) -> u128 {
+    pub fn mean(&self, ts: Timestamp) -> u128 {
         require!(ts >= self.updated_at, ERR_BAD_TIMESTAMP);
         if self.total_weight == 0 {
             return 0;
