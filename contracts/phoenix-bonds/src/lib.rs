@@ -433,8 +433,22 @@ impl PhoenixBonds {
         self.transfer_linear(&user_id, redeemed_linear, "pNEAR Redeem")
     }
 
-    // ======== Helper Methods ========
+    /// We assume all LiNEAR token transfer will succeed,
+    /// if it failed, then those tokens will be moved to the lost and found pool,
+    /// instead of reverting contract state.
+    /// Returns the amount of LiNEAR that was successfully transferred.
+    #[private]
+    pub fn on_linear_transferred(&mut self, user_id: AccountId, linear_amount: U128) -> U128 {
+        if is_promise_success() {
+            return linear_amount;
+        }
 
+        self.linear_lost_and_found.insert(&user_id, linear_amount.0);
+        0.into()
+    }
+}
+
+impl PhoenixBonds {
     fn get_linear_price(&self) -> Promise {
         linear_contract::ext(self.linear_address.clone())
             .with_static_gas(GAS_GET_LINEAR_PRICE)
@@ -456,20 +470,6 @@ impl PhoenixBonds {
                     .with_static_gas(GAS_FT_TRANSFER_CALLBACK)
                     .on_linear_transferred(account_id.clone(), amount.into()),
             )
-    }
-
-    /// We assume all LiNEAR token transfer will succeed,
-    /// if it failed, then those tokens will be moved to the lost and found pool,
-    /// instead of reverting contract state.
-    /// Returns the amount of LiNEAR that was successfully transferred.
-    #[private]
-    pub fn on_linear_transferred(&mut self, user_id: AccountId, linear_amount: U128) -> U128 {
-        if is_promise_success() {
-            return linear_amount;
-        }
-
-        self.linear_lost_and_found.insert(&user_id, linear_amount.0);
-        0.into()
     }
 }
 
