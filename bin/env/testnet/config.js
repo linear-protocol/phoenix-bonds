@@ -7,7 +7,7 @@ module.exports = {
     explorerUrl: "https://explorer.testnet.near.org",
   },
   contractId: 'phoenix-bonds.testnet',
-  ownerId: 'linear.sputnik-dao.near',
+  ownerId: 'linear.sputnikv2.testnet',
   linearAddress: 'linear-protocol.testnet',
   tau: 0.03,
   bootstrapLength: 5 * 24, // hours
