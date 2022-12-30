@@ -16,3 +16,4 @@ TGAS
 Tgas
 YOCTO
 yocto
+sputnikv2
