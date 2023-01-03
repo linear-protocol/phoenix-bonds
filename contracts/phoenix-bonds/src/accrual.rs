@@ -80,7 +80,7 @@ impl AccrualParameter {
     }
 
     pub fn current_alpha(&self, ts: Timestamp) -> u64 {
-        let current_mean_length: u64 = self.mean_length.mean(ts).try_into().unwrap();
+        let current_mean_length = self.mean_length.mean(ts);
         if current_mean_length < self.target_mean_length {
             self.alpha
         } else {
@@ -108,9 +108,7 @@ impl AccrualParameter {
         self.mean_length.insert(amount, ts); // this could only make mean length shorter
         let new_mean_length = self.mean_length.mean(ts);
 
-        if old_mean_length >= self.target_mean_length
-            && new_mean_length < self.target_mean_length
-        {
+        if old_mean_length >= self.target_mean_length && new_mean_length < self.target_mean_length {
             self.alpha = alpha_before_insertion;
             self.last_updated_at = ts;
         }
@@ -123,8 +121,7 @@ impl AccrualParameter {
         self.mean_length.remove(amount, length, ts);
         let new_mean_length = self.mean_length.mean(ts);
 
-        if (old_mean_length >= self.target_mean_length
-            && new_mean_length < self.target_mean_length)
+        if (old_mean_length >= self.target_mean_length && new_mean_length < self.target_mean_length)
             || (old_mean_length < self.target_mean_length
                 && new_mean_length >= self.target_mean_length)
         {
@@ -160,7 +157,10 @@ impl WeightedMeanLength {
             return 0;
         }
         let time_since_last_update = ts - self.updated_at;
-        (self.weighted_sum / self.total_weight.into() + time_since_last_update.into()).round_u128().try_into().unwrap()
+        (self.weighted_sum / self.total_weight.into() + time_since_last_update.into())
+            .round_u128()
+            .try_into()
+            .unwrap()
     }
 
     fn update(&mut self, ts: Timestamp) {
