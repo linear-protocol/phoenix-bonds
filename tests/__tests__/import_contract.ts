@@ -3,7 +3,6 @@ import fs from "fs";
 import { RecordBuilder } from "near-workspaces/dist/record";
 
 const IMPORTED_CONTRACT_CACHE_DIR = "./tests/imported-contracts/";
-const IMPORTED_ACCOUNT_CACHE_DIR = "./tests/imported-accounts/";
 
 export async function importContract({
   creator,

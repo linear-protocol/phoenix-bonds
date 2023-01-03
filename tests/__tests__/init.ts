@@ -2,7 +2,7 @@ import anyTest, { TestFn } from "ava";
 import { bootstrap } from "global-agent";
 import { NEAR, NearAccount, Worker } from "near-workspaces";
 import { daysToMs } from "./common";
-import { importContract } from "./helper";
+import { importContract } from "./import_contract";
 
 export const tau = 0.03;
 export const alpha = 3 * 24 * 3600 * 1000; // 3 days in ms
@@ -42,15 +42,15 @@ async function initFixtures(root: NearAccount, importLinear: boolean) {
     initialBalance: NEAR.parse("1000000").toString(),
   });
 
-  const linear = await initMockLinear(root);
-  const importedLinear: any = importLinear ? await importLINEAR(root) : null;
+  const linear = importLinear
+    ? await importLINEAR(root)
+    : await initMockLinear(root);
   const { owner, phoenix } = await initPhoenixBonds(root, linear);
 
   return {
     alice,
     bob,
     linear,
-    importedLinear,
     owner,
     phoenix,
   };
@@ -137,7 +137,7 @@ function setHttpProxy() {
 // Contract: https://github.com/linear-protocol/LiNEAR
 async function importLINEAR(
   creator: NearAccount,
-  blockId = 62886785 // April 05, 2022 at 8:22:31pm
+  blockId = 82078000
 ): Promise<NearAccount> {
   setHttpProxy();
 
