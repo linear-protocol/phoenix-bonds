@@ -53,4 +53,9 @@ impl PhoenixBonds {
             },
         }
     }
+
+    /// Returns the expected alpha at a future timestamp
+    pub fn get_alpha(&self, timestamp: Timestamp) -> Duration {
+        self.accrual_param.current_alpha(timestamp)
+    }
 }
