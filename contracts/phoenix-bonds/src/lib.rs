@@ -411,12 +411,13 @@ impl PhoenixBonds {
             ERR_BURN_TOO_MANY
         );
 
-        // equivalent amount of NEAR that given pNEAR worth
-        let equivalent_near_amount = pnear2near(pnear_amount.0, self.pnear_price(linear_price.0));
         // Due to precision, the calculated redeemed amount can be slightly more than the actual balance,
         // use `min` here to avoid subtraction overflow
         let redeemed_linear = min(
-            near2linear(equivalent_near_amount, linear_price.0),
+            near2linear(
+                pnear2near(pnear_amount.0, self.pnear_price(linear_price.0)),
+                linear_price.0,
+            ),
             self.linear_balance,
         );
 
