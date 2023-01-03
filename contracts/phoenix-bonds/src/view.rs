@@ -51,12 +51,7 @@ impl PhoenixBonds {
                 decreasing: self.accrual_param.mean_length.mean(current_ms)
                     > self.accrual_param.target_mean_length,
                 target_mean_length: self.accrual_param.target_mean_length,
-                current_mean_length: self
-                    .accrual_param
-                    .mean_length
-                    .mean(current_ms)
-                    .try_into()
-                    .unwrap(),
+                current_mean_length: self.accrual_param.mean_length.mean(current_ms),
             },
         }
     }
