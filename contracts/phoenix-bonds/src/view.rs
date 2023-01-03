@@ -42,7 +42,7 @@ impl PhoenixBonds {
                 adjust_interval: self.accrual_param.adjust_interval,
                 adjust_rate: self.accrual_param.adjust_rate,
                 decreasing: self.accrual_param.mean_length.mean(current_timestamp_ms())
-                    > self.accrual_param.target_mean_length as u128,
+                    > self.accrual_param.target_mean_length,
             },
         }
     }
