@@ -1,4 +1,5 @@
-const { getEnvConfig } = require("../helper");
+const { Gas } = require("near-workspaces");
+const { getEnvConfig, storageDeposit } = require("../helper");
 const { init, funcCallProposal } = require("../near");
 
 exports.command = 'withdraw';
@@ -23,14 +24,17 @@ exports.handler = async function (yargs) {
   const contractId = config.contractId;
   const signerAccount = await near.account(signer);
 
+  await storageDeposit(signerAccount, config.linearAddress, contractId);
+
   await funcCallProposal(
     signerAccount,
     config.ownerId,
-    'Withdraw treasury pool',
+    'Withdraw treasury pool (160 Tgas)',
     contractId,
     'withdraw_treasury',
     {},
-    '1'
+    '1',
+    Gas.parse('160 Tgas')
   );
 
   console.log('proposed');
