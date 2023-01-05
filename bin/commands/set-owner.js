@@ -1,21 +1,21 @@
-const { getEnvConfig, } = require("../helper");
+const { getEnvConfig } = require("../helper");
 const initNear = require("../near");
-const fs = require('fs');
+const fs = require("fs");
 const { confirm } = require("./utils");
 
-exports.command = 'set-owner';
-exports.desc = 'Set new owner';
-exports.builder = yargs => {
+exports.command = "set-owner";
+exports.desc = "Set new owner";
+exports.builder = (yargs) => {
   yargs
-    .option('env', {
-      describe: 'Env name',
-      default: 'dev'
+    .option("env", {
+      describe: "Env name",
+      default: "dev",
     })
-    .option('owner', {
-      describe: 'new owner id'
+    .option("owner", {
+      describe: "new owner id",
     })
-    .demandOption(['owner'])
-}
+    .demandOption(["owner"]);
+};
 
 exports.handler = async function (yargs) {
   const { env, owner } = yargs;
@@ -34,11 +34,11 @@ exports.handler = async function (yargs) {
 
   await account.functionCall({
     contractId,
-    methodName: 'change_owner',
+    methodName: "change_owner",
     args,
-    attachedDeposit: '1'
+    attachedDeposit: "1",
   });
 
-  console.log('done');
+  console.log("done");
   process.exit();
-}
+};
