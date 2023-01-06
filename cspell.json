@@ -11,9 +11,10 @@
   "dictionaries": ["project-words"],
   "ignorePaths": [
     "Cargo.toml",
-    "/project-words.txt",
+    "./project-words.txt",
     "./package.json",
-    "./.*"
+    "./.*",
+    "./contracts/phoenix-bonds/src/fungible_token/metadata.rs"
   ],
   "useGitignore": true
 }
