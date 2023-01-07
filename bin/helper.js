@@ -1,12 +1,12 @@
-function getEnvConfig (env) {
+function getEnvConfig(env) {
   return require(`./env/${env}/config.js`);
 }
 
-function daysToMs (n) {
+function daysToMs(n) {
   return parseInt(n * 24 * 3600 * 1000);
 }
 
-function hoursToMs (n) {
+function hoursToMs(n) {
   return parseInt(n * 3600 * 1000);
 }
 
@@ -14,4 +14,4 @@ module.exports = {
   getEnvConfig,
   daysToMs,
   hoursToMs,
-}
+};

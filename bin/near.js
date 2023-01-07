@@ -1,13 +1,13 @@
-const nearAPI = require('near-api-js');
+const nearAPI = require("near-api-js");
 const { Gas, NEAR } = require("near-units");
-const { getEnvConfig } = require('./helper');
+const { getEnvConfig } = require("./helper");
 
 /**
  * init near object
  * @param {'local' | 'dev' | 'testnet' | 'staging' | 'mainnet'} env
  * @returns
  */
-async function init (env) {
+async function init(env) {
   const { keyStores } = nearAPI;
   const homedir = require("os").homedir();
   const CREDENTIALS_DIR = ".near-credentials";
@@ -20,7 +20,7 @@ async function init (env) {
   return nearAPI.connect(config);
 }
 
-async function funcCallProposal (
+async function funcCallProposal(
   signer,
   dao,
   description,
@@ -28,14 +28,14 @@ async function funcCallProposal (
   methodName,
   args,
   deposit,
-  gas,
+  gas
 ) {
   deposit = deposit || "0";
-  gas = gas || Gas.parse('100 Tgas');
+  gas = gas || Gas.parse("100 Tgas");
 
-  console.log('args', args);
-  args = Buffer.from(JSON.stringify(args)).toString('base64');
-  console.log('encoded args', args);
+  console.log("args", args);
+  args = Buffer.from(JSON.stringify(args)).toString("base64");
+  console.log("encoded args", args);
 
   const proposal = {
     proposal: {
@@ -49,23 +49,23 @@ async function funcCallProposal (
               args,
               deposit,
               gas,
-            }
-          ]
-        }
-      }
-    }
+            },
+          ],
+        },
+      },
+    },
   };
 
   return signer.functionCall({
     contractId: dao,
-    methodName: 'add_proposal',
+    methodName: "add_proposal",
     args: proposal,
-    gas: Gas.parse('200 Tgas'),
-    attachedDeposit: NEAR.parse('0.1')
+    gas: Gas.parse("200 Tgas"),
+    attachedDeposit: NEAR.parse("0.1"),
   });
 }
 
-async function funcCall (
+async function funcCall(
   signer,
   dao,
   description,
@@ -73,7 +73,7 @@ async function funcCall (
   methodName,
   args,
   deposit,
-  gas,
+  gas
 ) {
   if (!dao) {
     return signer.functionCall({
@@ -92,7 +92,7 @@ async function funcCall (
       methodName,
       args,
       deposit,
-      gas,
+      gas
     );
   }
 }
@@ -101,4 +101,4 @@ module.exports = {
   init,
   funcCallProposal,
   funcCall,
-}
+};
