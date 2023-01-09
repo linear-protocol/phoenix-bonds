@@ -9,6 +9,7 @@ import {
   getBondNote,
   getLinearPrice,
   setLinearPrice,
+  setSmallChange,
   setTimestamp,
 } from "./common";
 import { init } from "./init";
@@ -129,4 +130,15 @@ test("Cancel after commit", async (test) => {
     cancel(phoenix, alice, noteId),
     "Bond is not pending"
   );
+});
+
+test("Cancel the only bond with small change in LiNEAR", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  await ftStorageDeposit(linear, alice);
+  await setSmallChange(linear, true);
+
+  const noteId = await bond(alice, phoenix, NEAR.parse("2000"));
+  const refunded = await cancel(phoenix, alice, noteId);
+
+  test.is(refunded, NEAR.parse("2000").subn(10).toString(10));
 });

@@ -1,14 +1,12 @@
 import anyTest, { TestFn } from "ava";
-import { bootstrap } from "global-agent";
 import { NEAR, NearAccount, Worker } from "near-workspaces";
 import { daysToMs } from "./common";
-import { importContract } from "./import_contract";
 
 export const tau = 0.03;
 export const alpha = 3 * 24 * 3600 * 1000; // 3 days in ms
 export const bootstrapEnds = daysToMs(15);
 
-export function init(importLinear = false) {
+export function init() {
   const test = anyTest as TestFn<{
     worker: Worker;
     accounts: Record<string, NearAccount>;
@@ -16,7 +14,7 @@ export function init(importLinear = false) {
 
   test.beforeEach(async (t) => {
     const worker = await Worker.init();
-    const accounts = await initFixtures(worker.rootAccount, importLinear);
+    const accounts = await initFixtures(worker.rootAccount);
     t.context = {
       ...t.context,
       worker,
@@ -34,7 +32,7 @@ export function init(importLinear = false) {
   return test;
 }
 
-async function initFixtures(root: NearAccount, importLinear: boolean) {
+async function initFixtures(root: NearAccount) {
   const alice = await root.createSubAccount("alice", {
     initialBalance: NEAR.parse("1000000").toString(),
   });
@@ -42,9 +40,7 @@ async function initFixtures(root: NearAccount, importLinear: boolean) {
     initialBalance: NEAR.parse("1000000").toString(),
   });
 
-  const linear = importLinear
-    ? await importLINEAR(root)
-    : await initMockLinear(root);
+  const linear = await initMockLinear(root);
   const { owner, phoenix } = await initPhoenixBonds(root, linear);
 
   return {
@@ -116,46 +112,4 @@ async function createAndDeploy(
     await contract.call(contract, option.method, option.args);
   }
   return contract;
-}
-
-// Set up HTTP proxy when runners have network proxy preference
-function setHttpProxy() {
-  if (process.env.http_proxy) {
-    bootstrap();
-    // set up global proxy
-    const url = process.env.http_proxy;
-    (global as any).GLOBAL_AGENT.HTTP_PROXY = url;
-    (global as any).GLOBAL_AGENT.HTTPS_PROXY = url;
-    // no proxy is needed for local network
-    (global as any).GLOBAL_AGENT.NO_PROXY = "localhost,127.0.0.1,0.0.0.0";
-    console.log(
-      `[#config]: set up http(s) proxy with your setting: [ ${url} ]`
-    );
-  }
-}
-
-// Contract: https://github.com/linear-protocol/LiNEAR
-async function importLINEAR(
-  creator: NearAccount,
-  blockId = 82078000
-): Promise<NearAccount> {
-  setHttpProxy();
-
-  console.log("Importing LINEAR Contract...");
-  const LiNEAR = await importContract({
-    creator,
-    mainnetContract: "linear-protocol.near",
-    blockId,
-    withData: true,
-  });
-  await creator.call(
-    LiNEAR,
-    "deposit_and_stake",
-    {},
-    {
-      attachedDeposit: NEAR.parse("200 N"),
-    }
-  );
-  console.log("  ✅ Verified: Imported LINEAR contract is working correctly.");
-  return LiNEAR;
 }

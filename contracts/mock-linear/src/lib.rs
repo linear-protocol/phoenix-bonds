@@ -15,6 +15,7 @@ pub struct MockLinear {
     linear_price: u128,
     tokens: FungibleToken,
     panic: bool,
+    small_change: bool,
 }
 
 #[near_bindgen]
@@ -25,6 +26,7 @@ impl MockLinear {
             linear_price: ONE_NEAR,
             tokens: FungibleToken::new(b't'),
             panic: false,
+            small_change: false,
         }
     }
 
@@ -35,10 +37,13 @@ impl MockLinear {
         require!(!self.panic, "LiNEAR Panic");
         let account_id = env::predecessor_account_id();
         let amount = env::attached_deposit();
-        let shares =
+        let mut shares =
             (BigDecimal::from(amount) * ONE_NEAR.into() / self.linear_price.into()).round_u128();
+        if self.small_change {
+            shares -= 10;
+        }
 
-        self.mint_linear(&account_id, amount, None);
+        self.mint_linear(&account_id, shares, None);
 
         shares.into()
     }
@@ -55,5 +60,9 @@ impl MockLinear {
 
     pub fn set_panic(&mut self, panic: bool) {
         self.panic = panic;
+    }
+
+    pub fn set_small_change(&mut self, small_change: bool) {
+        self.small_change = small_change;
     }
 }
