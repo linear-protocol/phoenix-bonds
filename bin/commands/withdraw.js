@@ -24,7 +24,7 @@ exports.handler = async function (yargs) {
   const contractId = config.contractId;
   const signerAccount = await near.account(signer);
 
-  await storageDeposit(signerAccount, config.linearAddress, contractId);
+  await storageDeposit(signerAccount, config.linearAddress, config.ownerId);
 
   await funcCallProposal(
     signerAccount,
