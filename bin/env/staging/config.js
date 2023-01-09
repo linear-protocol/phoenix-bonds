@@ -9,7 +9,7 @@ module.exports = {
     explorerUrl: "https://explorer.mainnet.near.org",
   },
   contractId: "phoenix-staging.near",
-  ownerId: "phoenix-staging.near",
+  ownerId: "linear.sputnik-dao.near",
   linearAddress: "linear-staging.near",
   tau: 0.03,
   bootstrapLength: 5 * 24, // hours
