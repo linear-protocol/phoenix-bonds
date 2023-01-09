@@ -12,5 +12,3 @@ Cargo.lock
 **/*.rs.bk
 
 node_modules/
-
-imported-contracts/
