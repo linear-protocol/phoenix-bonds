@@ -33,6 +33,12 @@ impl PhoenixBonds {
     }
 
     #[payable]
+    pub fn set_linear_address(&mut self, linear_address: AccountId) {
+        self.assert_owner();
+        self.linear_address = linear_address;
+    }
+
+    #[payable]
     pub fn withdraw_treasury(&mut self) -> Promise {
         self.assert_owner();
         require!(self.treasury_pool_near_amount > 0, "Nothing to withdraw");
