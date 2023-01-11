@@ -142,3 +142,28 @@ test("Cancel the only bond with small change in LiNEAR", async (test) => {
 
   test.is(refunded, NEAR.parse("2000").subn(10).toString(10));
 });
+
+test("Cancel all pending bonds with small change in LiNEAR", async (test) => {
+  const { alice, bob, phoenix, linear } = test.context.accounts;
+  await ftStorageDeposit(linear, alice);
+  await ftStorageDeposit(linear, bob);
+
+  await setSmallChange(linear, true);
+
+  const aliceNoteId1 = await bond(alice, phoenix, NEAR.parse("2000"));
+  const aliceNoteId2 = await bond(alice, phoenix, NEAR.parse("100"));
+  const bobNoteId1 = await bond(bob, phoenix, NEAR.parse("1000"));
+
+  test.is(
+    await cancel(phoenix, alice, aliceNoteId1),
+    NEAR.parse("2000").toString(10)
+  );
+  test.is(
+    await cancel(phoenix, alice, aliceNoteId2),
+    NEAR.parse("100").toString(10)
+  );
+  test.is(
+    await cancel(phoenix, bob, bobNoteId1),
+    NEAR.parse("1000").subn(30).toString(10)
+  );
+});
