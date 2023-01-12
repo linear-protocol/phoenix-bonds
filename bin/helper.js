@@ -13,7 +13,7 @@ function hoursToMs(n) {
 /**
  * 
  * @param {nearAPI.Near} near 
- * @param {string} env 
+ * @param {string} signer 
  * @param {string} tokenId 
  * @param {string} receiverId 
  */
