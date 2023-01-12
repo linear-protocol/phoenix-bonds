@@ -1,6 +1,7 @@
 const { getEnvConfig, daysToMs, hoursToMs } = require("../helper");
 const initNear = require("../near");
 const fs = require("fs");
+const { confirm } = require("./utils");
 
 exports.command = "deploy";
 exports.desc = "Deploy and init new contract";
@@ -47,7 +48,12 @@ exports.handler = async function (yargs) {
     bootstrap_ends,
     accrual,
   };
-  console.dir(args);
+  console.dir({
+    ...args,
+    bootstrap_ends: new Date(args.bootstrap_ends).toString(),
+  });
+
+  await confirm();
 
   await account.functionCall({
     contractId,
