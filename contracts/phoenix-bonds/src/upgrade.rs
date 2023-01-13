@@ -35,8 +35,14 @@ mod migration {
     #[no_mangle]
     pub fn upgrade() {
         env::setup_panic_hook();
+
         let contract: PhoenixBonds = env::state_read().expect("ERR_CONTRACT_IS_NOT_INITIALIZED");
-        contract.assert_owner();
+        // UpgradeRemote of Astro DAO doesn't attach 1 yocto NEAR
+        require!(
+            env::predecessor_account_id() == contract.owner_id,
+            "Not owner"
+        );
+
         let current_id = env::current_account_id().as_bytes().to_vec();
         let migrate_method_name = b"migrate".to_vec();
         let get_summary_method_name = b"get_summary".to_vec();
