@@ -7,34 +7,34 @@ const ERR_NOT_OWNER: &str = "Not owner";
 impl PhoenixBonds {
     #[payable]
     pub fn change_owner(&mut self, new_owner_id: AccountId) {
-        self.assert_owner();
+        self.assert_owner_with_one_yocto();
         self.owner_id = new_owner_id;
     }
 
     #[payable]
     pub fn set_tau(&mut self, new_tau: BasisPoint) {
         assert_tau(new_tau);
-        self.assert_owner();
+        self.assert_owner_with_one_yocto();
         self.tau = new_tau;
     }
 
     #[payable]
     pub fn pause(&mut self) {
-        self.assert_owner();
+        self.assert_owner_with_one_yocto();
         require!(!self.paused, "Already paused");
         self.paused = true;
     }
 
     #[payable]
     pub fn resume(&mut self) {
-        self.assert_owner();
+        self.assert_owner_with_one_yocto();
         require!(self.paused, "Not paused");
         self.paused = false;
     }
 
     #[payable]
     pub fn withdraw_treasury(&mut self) -> Promise {
-        self.assert_owner();
+        self.assert_owner_with_one_yocto();
         require!(self.treasury_pool_near_amount > 0, "Nothing to withdraw");
         require!(
             env::prepaid_gas() >= GAS_WITHDRAW + GAS_WITHDRAW_CALLBACK + GAS_GET_LINEAR_PRICE, // 160 Tgas
@@ -97,7 +97,7 @@ impl PhoenixBonds {
 }
 
 impl PhoenixBonds {
-    pub(crate) fn assert_owner(&self) {
+    pub(crate) fn assert_owner_with_one_yocto(&self) {
         assert_one_yocto();
         require!(
             env::predecessor_account_id() == self.owner_id,
