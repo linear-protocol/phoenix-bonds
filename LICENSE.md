@@ -35,7 +35,7 @@ Section 2 -- Grant of Rights
 2. You may provide the code to anyone else and publish excerpts of it
    for the purposes of review and commentary, provided that when you
    do so you make any recipient of the code aware of the terms of this
-   license and that you attribute the code to Lit Tech.
+   license and that you attribute the code to Phoenix Bonds.
 
 3. Other than in respect of those parts of the code that were
    developed by other parties and as specified strictly in accordance
@@ -83,7 +83,8 @@ Section 4 -- Termination, suspension and variation
 Section 5 -- General
 --------------------
 
-1. Questions and comments regarding this license are welcomed and
+1. Linear Protocol reserves the right of final interpretation of this license.
+2. Questions and comments regarding this license are welcomed and
    should be addressed to [dev@linearprotocol.org].
 
 
