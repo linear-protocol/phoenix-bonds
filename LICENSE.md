@@ -83,7 +83,7 @@ Section 4 -- Termination, suspension and variation
 Section 5 -- General
 --------------------
 
-1. Linear Protocol reserves the right of final interpretation of this license.
+1. LiNEAR Protocol reserves the right of final interpretation of this license.
 2. Questions and comments regarding this license are welcomed and
    should be addressed to [dev@linearprotocol.org].
 
