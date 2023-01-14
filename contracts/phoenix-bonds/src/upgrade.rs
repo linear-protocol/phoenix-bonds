@@ -37,7 +37,7 @@ mod migration {
         env::setup_panic_hook();
 
         let contract: PhoenixBonds = env::state_read().expect("ERR_CONTRACT_IS_NOT_INITIALIZED");
-        // UpgradeRemote of Astro DAO doesn't attach 1 yocto NEAR
+        // UpgradeRemote of Astro DAO doesn't attach 1 yocto NEAR, so only assert owner
         require!(
             env::predecessor_account_id() == contract.owner_id,
             "Not owner"
