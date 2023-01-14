@@ -1,4 +1,4 @@
-PHOENIX BONDS LIMITED CODE REVIEW LICENSE
+PHOENIX BONDS CODE REVIEW LICENSE
 ================================
 
 This license grants you the rights, and only the rights, set out
