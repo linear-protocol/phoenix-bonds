@@ -8,4 +8,7 @@ export default {
   "tests/**/*.{js,jsx,ts,tsx}": [
     "prettier --write"
   ],
+  "bin/**/*.{js}": [
+    "prettier --write"
+  ],
 };

@@ -86,6 +86,15 @@ export async function setLinearPanic(linear: NearAccount, panic: boolean) {
   });
 }
 
+export async function setSmallChange(
+  linear: NearAccount,
+  smallChange: boolean
+) {
+  return linear.call(linear, "set_small_change", {
+    small_change: smallChange,
+  });
+}
+
 export async function ftStorageDeposit(ft: NearAccount, account: NearAccount) {
   return account.call(
     ft,
