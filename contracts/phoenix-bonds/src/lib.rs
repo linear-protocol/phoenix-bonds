@@ -264,7 +264,7 @@ impl PhoenixBonds {
         .emit();
 
         // transfer LiNEAR to user
-        let memo = format!("Cancel Bond #{}", note_id);
+        let memo = format!("Cancel Bond #{note_id}");
         self.transfer_linear(&user_id, refund_linear, memo.as_str())
     }
 
