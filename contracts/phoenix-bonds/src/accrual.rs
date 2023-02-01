@@ -51,7 +51,7 @@ pub struct AccrualParameter {
     pub adjust_interval: Duration,
     /// how much should alpha decrease in each interval
     pub adjust_rate: BasisPoint,
-    /// when did mean length exceed target, 0 means mean length was below target
+    /// when did mean length exceed target, 0 means mean length was made below target in last operation
     pub exceeds_target_at: Timestamp,
     /// volume weighted mean bonding length
     pub mean_length: WeightedMeanLength,
@@ -78,10 +78,12 @@ impl AccrualParameter {
 
     pub fn current_alpha(&self, ts: Timestamp) -> Duration {
         let current_mean_length = self.mean_length.mean(ts);
-        if current_mean_length < self.target_mean_length {
+        if current_mean_length <= self.target_mean_length {
             self.alpha
         } else {
             // how long has the mean length exceeded target value
+            // if the mean length doesn't grow naturally, get exceed_length from the
+            // calculated exceeds_target_at
             let exceed_length = if self.exceeds_target_at == 0 {
                 current_mean_length - self.target_mean_length
             } else {
@@ -114,7 +116,7 @@ impl AccrualParameter {
         // if mean length is above target but exceeds_target_at is 0
         // this means the mean length grows above target naturally, we'll need to find the
         // correct value for exceeds_target_at.
-        if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
+        else if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
             self.exceeds_target_at = ts - (old_mean_length - self.target_mean_length);
         }
     }
@@ -130,15 +132,13 @@ impl AccrualParameter {
         if old_mean_length > self.target_mean_length && new_mean_length < self.target_mean_length {
             self.alpha = alpha_before_removal;
             self.exceeds_target_at = 0;
-        }
-        if new_mean_length > self.target_mean_length {
-            // if this action makes the mean length above target, then exceeds_target_at should be now
+        } else if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
+            // if this action makes the mean length above target, then exceeds_target_at should be now.
             if old_mean_length < self.target_mean_length {
                 self.exceeds_target_at = ts;
-            }
-            // else if the mean length grows above target naturally
-            // need to find the correct exceeds_target_at
-            if self.exceeds_target_at == 0 {
+            } else {
+                // else if the mean length grows above target naturally
+                // need to find the correct exceeds_target_at
                 self.exceeds_target_at = ts - (old_mean_length - self.target_mean_length);
             }
         }
