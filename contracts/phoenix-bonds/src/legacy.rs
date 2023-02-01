@@ -12,33 +12,33 @@ use near_sdk::{
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct ContractV1_0_0 {
     /// pNEAR token
-    ft: FungibleToken,
+    pub ft: FungibleToken,
     /// contract owner
-    owner_id: AccountId,
+    pub owner_id: AccountId,
     /// LiNEAR contract address
-    linear_address: AccountId,
+    pub linear_address: AccountId,
     /// if all user interactions of the contract should be paused
-    paused: bool,
+    pub paused: bool,
 
     /// total LiNEAR balance this contract holds
-    linear_balance: Balance,
+    pub linear_balance: Balance,
     /// amount of NEAR that has been bonded but not yet claimed/canceled
-    pending_pool_near_amount: Balance,
+    pub pending_pool_near_amount: Balance,
     /// amount of NEAR that the protocol owns
-    permanent_pool_near_amount: Balance,
+    pub permanent_pool_near_amount: Balance,
     /// amount of NEAR to reward AMM liquidity provider
-    treasury_pool_near_amount: Balance,
+    pub treasury_pool_near_amount: Balance,
     /// percentage of bond amount that goes to treasury pool when a user claims
-    tau: BasisPoint,
+    pub tau: BasisPoint,
 
     /// amount of LiNEAR that was not successfully transferred
-    linear_lost_and_found: LostAndFound,
+    pub linear_lost_and_found: LostAndFound,
     /// bond note for each user
-    bond_notes: BondNotes,
+    pub bond_notes: BondNotes,
     /// when bootstrapping period ends, before which commit & redeem are disabled
-    bootstrap_ends_at: Timestamp,
+    pub bootstrap_ends_at: Timestamp,
     /// helper module to calculate accrual parameter (alpha)
-    accrual_param: AccrualParameterV1_0_0,
+    pub accrual_param: AccrualParameterV1_0_0,
 }
 
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
