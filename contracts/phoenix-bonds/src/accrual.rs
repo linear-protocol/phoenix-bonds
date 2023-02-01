@@ -82,10 +82,6 @@ impl AccrualParameter {
             self.alpha
         } else {
             // how long has the mean length exceeded target value
-            // let exceed_length = min(
-            //     current_mean_length - self.target_mean_length,
-            //     ts - self.last_updated_at,
-            // );
             let exceed_length = if self.exceeds_target_at == 0 {
                 current_mean_length - self.target_mean_length
             } else {
