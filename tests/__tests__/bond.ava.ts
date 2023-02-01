@@ -4,7 +4,10 @@ import {
   assertFailure,
   bond,
   BondNote,
+  bondWithLinear,
+  ftStorageDeposit,
   getBondNote,
+  getFtBalance,
   getLinearPrice,
   setLinearPanic,
 } from "./common";
@@ -31,6 +34,8 @@ function verifyNewBondNote(
 }
 
 const test = init();
+
+// ---- Bond with NEAR
 
 test("Bond with small amount", async (test) => {
   const { alice, phoenix } = test.context.accounts;
@@ -100,5 +105,37 @@ test("Bond failed and all deposits are refunded", async (test) => {
     Big(balanceBefore.sub(balanceAfter).toString()).lt(
       Big(NEAR.parse("0.002").toString())
     )
+  );
+});
+
+// ---- Bond with LiNEAR
+
+test.only("Wrong token transferred", async (test) => {
+  const { alice, phoenix, fakeLinear } = test.context.accounts;
+  const amount = NEAR.parse('1000');
+
+  // mint some fake linear
+  await alice.call(
+    fakeLinear,
+    'deposit_and_stake',
+    {},
+    {
+      attachedDeposit: amount,
+    }
+  );
+
+  await ftStorageDeposit(fakeLinear, phoenix);
+
+  await bondWithLinear(
+    alice,
+    phoenix,
+    fakeLinear,
+    amount.toString(10)
+  );
+
+  // all fake tokens should be refunded
+  test.is(
+    await getFtBalance(fakeLinear, alice),
+    amount.toString(10)
   );
 });

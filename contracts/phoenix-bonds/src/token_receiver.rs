@@ -16,6 +16,8 @@ impl FungibleTokenReceiver for PhoenixBonds {
         amount: U128,
         msg: String,
     ) -> PromiseOrValue<U128> {
+        require!(env::prepaid_gas() >= GAS_FT_ON_TRANSFER, ERR_NOT_ENOUGH_GAS);
+
         let token_address = env::predecessor_account_id();
         require!(token_address == self.linear_address, ERR_BAD_TOKEN);
         require!(

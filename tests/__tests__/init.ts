@@ -43,10 +43,13 @@ async function initFixtures(root: NearAccount) {
   const linear = await initMockLinear(root);
   const { owner, phoenix } = await initPhoenixBonds(root, linear);
 
+  const fakeLinear = await initFakeLinear(root);
+
   return {
     alice,
     bob,
     linear,
+    fakeLinear,
     owner,
     phoenix,
   };
@@ -56,6 +59,18 @@ async function initMockLinear(root: NearAccount) {
   return createAndDeploy(
     root,
     "linear",
+    "tests/compiled-contracts/mock_linear.wasm",
+    {
+      method: "new",
+      args: {},
+    }
+  );
+}
+
+async function initFakeLinear(root: NearAccount) {
+  return createAndDeploy(
+    root,
+    "linear-fake",
     "tests/compiled-contracts/mock_linear.wasm",
     {
       method: "new",
