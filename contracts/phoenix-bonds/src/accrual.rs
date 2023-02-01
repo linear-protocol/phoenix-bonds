@@ -136,7 +136,7 @@ impl AccrualParameter {
             if old_mean_length < self.target_mean_length {
                 self.exceeds_target_at = ts;
             }
-            // the mean length grows above target naturally
+            // else if the mean length grows above target naturally
             // need to find the correct exceeds_target_at
             if self.exceeds_target_at == 0 {
                 self.exceeds_target_at = ts - (old_mean_length - self.target_mean_length);
