@@ -28,7 +28,7 @@ impl FungibleTokenReceiver for PhoenixBonds {
         self.get_linear_price()
             .then(
                 Self::ext(env::current_account_id())
-                    .with_static_gas(GAS_GET_LINEAR_PRICE + GAS_LINEAR_BOND_CALLBACK)
+                    .with_static_gas(GAS_LINEAR_BOND_CALLBACK)
                     .on_get_linear_price_for_linear_bond(sender_id, amount),
             )
             .into()
@@ -43,12 +43,13 @@ impl PhoenixBonds {
         user_id: AccountId,
         linear_amount: U128,
         #[callback_result] linear_price: Result<U128, PromiseError>,
-    ) -> u32 {
+    ) -> U128 {
         let linear_price = linear_price.unwrap().0;
         let near_amount = linear2near(linear_amount.0, linear_price);
         let bond_amount = near_amount - BOND_STORAGE_DEPOSIT;
 
-        let note = self.internal_create_bond(user_id, bond_amount, linear_amount.0);
-        note.id()
+        self.internal_create_bond(user_id, bond_amount, linear_amount.0);
+
+        U128(0)
     }
 }

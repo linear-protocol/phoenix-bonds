@@ -110,32 +110,71 @@ test("Bond failed and all deposits are refunded", async (test) => {
 
 // ---- Bond with LiNEAR
 
-test.only("Wrong token transferred", async (test) => {
-  const { alice, phoenix, fakeLinear } = test.context.accounts;
-  const amount = NEAR.parse('1000');
-
-  // mint some fake linear
-  await alice.call(
-    fakeLinear,
-    'deposit_and_stake',
+async function mintLinear(
+  account: NearAccount,
+  linear: NearAccount,
+  amount: string
+) {
+  await account.call(
+    linear,
+    "deposit_and_stake",
     {},
     {
       attachedDeposit: amount,
     }
   );
+}
 
+test("Wrong token transferred", async (test) => {
+  const { alice, phoenix, fakeLinear } = test.context.accounts;
+  const amount = NEAR.parse("1000");
+
+  // mint some fake linear
+  await mintLinear(alice, fakeLinear, amount.toString(10));
   await ftStorageDeposit(fakeLinear, phoenix);
 
-  await bondWithLinear(
+  await bondWithLinear(alice, phoenix, fakeLinear, amount.toString(10));
+
+  // all fake tokens should be refunded
+  test.is(await getFtBalance(fakeLinear, alice), amount.toString(10));
+});
+
+test("LiNEAR amount too low", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  const amount = NEAR.parse("1");
+
+  await mintLinear(alice, linear, amount.toString(10));
+  await ftStorageDeposit(linear, phoenix);
+
+  await bondWithLinear(alice, phoenix, linear, NEAR.parse("0.09").toString(10));
+
+  test.is(await getFtBalance(linear, alice), amount.toString(10));
+});
+
+test("Bond with LiNEAR", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  const amount = NEAR.parse("1000");
+
+  await mintLinear(alice, linear, amount.toString(10));
+  await ftStorageDeposit(linear, phoenix);
+
+  const usedAmount = await bondWithLinear(
     alice,
     phoenix,
-    fakeLinear,
+    linear,
     amount.toString(10)
   );
 
-  // all fake tokens should be refunded
+  test.is(usedAmount, amount.toString(10));
+
+  const note = await getBondNote(
+    phoenix,
+    alice,
+    0,
+    NEAR.parse("1").toString(10)
+  );
   test.is(
-    await getFtBalance(fakeLinear, alice),
-    amount.toString(10)
+    note.bond_amount,
+    amount.sub(NEAR.parse("0.01")).toString(10) // 0.01 NEAR as storage deposit
   );
 });

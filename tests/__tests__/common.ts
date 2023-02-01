@@ -290,20 +290,20 @@ export async function claimLostAndFound(
 export async function bondWithLinear(
   account: NearAccount,
   phoenix: NearAccount,
-  linear:NearAccount,
-  amount: string,
-) {
+  linear: NearAccount,
+  amount: string
+): Promise<string> {
   return account.call(
     linear,
-    'ft_transfer_call',
+    "ft_transfer_call",
     {
       receiver_id: phoenix.accountId,
       amount,
-      msg: ""
+      msg: "",
     },
     {
-      attachedDeposit: NEAR.from('1'),
-      gas: Gas.parse('90 Tgas')
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("120 Tgas"),
     }
-  )
+  );
 }
