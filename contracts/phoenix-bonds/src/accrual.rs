@@ -395,6 +395,47 @@ mod tests {
     }
 
     #[test]
+    fn test_alpha_when_mean_length_above_target_2() {
+        let mut accrual = prepare_accrual_param();
+
+        // first insert 100 near at day 0
+        accrual.weighted_mean_insert(100 * ONE_NEAR, 0);
+
+        // day 6
+        // insert another 100 near
+        let ts = 6 * ONE_DAY_MS;
+        accrual.weighted_mean_insert(100 * ONE_NEAR, ts);
+
+        // day 18
+        let ts = 18 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), INIT_ALPHA); // INIT_ALPHA
+
+        // day 19
+        let ts = 19 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), 99 * INIT_ALPHA / 100); // INIT_ALPHA * 0.99
+
+        // day 36
+        // insert a third 100 near
+        let ts = 36 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), 216305959); // INIT_ALPHA * 0.99^18
+
+        accrual.weighted_mean_insert(100 * ONE_NEAR, ts);
+        assert_eq!(accrual.current_alpha(ts), 216305959); // INIT_ALPHA * 0.99^18
+
+        // day 40
+        let ts = 40 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), 207782640); // INIT_ALPHA * 0.99^22
+
+        // remove last 100 near, this SHALL NOT affect alpha
+        accrual.weighted_mean_remove(100 * ONE_NEAR, 4 * ONE_DAY_MS, ts);
+        assert_eq!(accrual.current_alpha(ts), 207782640); // INIT_ALPHA * 0.99^22
+
+        // day 41
+        let ts = 41 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), 205704813); // INIT_ALPHA * 0.99^23
+    }
+
+    #[test]
     fn test_alpha_when_mean_length_increased_above_target() {
         let mut accrual = prepare_accrual_param();
 
