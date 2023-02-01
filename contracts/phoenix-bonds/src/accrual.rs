@@ -5,14 +5,11 @@ use near_sdk::{
     serde::{Deserialize, Serialize},
     Balance, PanicOnDefault,
 };
-use std::{
-    cmp::{max, min},
-    convert::TryInto,
-};
+use std::{cmp::max, convert::TryInto};
 
 use crate::{
     types::{BasisPoint, Duration, Timestamp, FULL_BASIS_POINT},
-    utils::{apply_basis_point, current_timestamp_ms},
+    utils::apply_basis_point,
 };
 
 const ERR_BAD_MIN_ALPHA: &str = "Min alpha cannot be 0";
@@ -54,8 +51,8 @@ pub struct AccrualParameter {
     pub adjust_interval: Duration,
     /// how much should alpha decrease in each interval
     pub adjust_rate: BasisPoint,
-    /// when was alpha last updated
-    pub last_updated_at: Timestamp,
+    /// when did mean length exceed target, 0 means mean length was below target
+    pub exceeds_target_at: Timestamp,
     /// volume weighted mean bonding length
     pub mean_length: WeightedMeanLength,
 }
@@ -74,7 +71,7 @@ impl AccrualParameter {
             target_mean_length,
             adjust_interval,
             adjust_rate,
-            last_updated_at: current_timestamp_ms(),
+            exceeds_target_at: 0,
             mean_length: WeightedMeanLength::new(),
         }
     }
@@ -85,10 +82,15 @@ impl AccrualParameter {
             self.alpha
         } else {
             // how long has the mean length exceeded target value
-            let exceed_length = min(
-                current_mean_length - self.target_mean_length,
-                ts - self.last_updated_at,
-            );
+            // let exceed_length = min(
+            //     current_mean_length - self.target_mean_length,
+            //     ts - self.last_updated_at,
+            // );
+            let exceed_length = if self.exceeds_target_at == 0 {
+                current_mean_length - self.target_mean_length
+            } else {
+                ts - self.exceeds_target_at
+            };
             // how many adjustments shall be made
             let num_adjustments = exceed_length / self.adjust_interval;
 
@@ -108,9 +110,16 @@ impl AccrualParameter {
         self.mean_length.insert(amount, ts); // this could only make mean length shorter
         let new_mean_length = self.mean_length.mean(ts);
 
-        if old_mean_length >= self.target_mean_length && new_mean_length < self.target_mean_length {
+        // if mean length drops below target, reset exceeds_target_at
+        if old_mean_length > self.target_mean_length && new_mean_length < self.target_mean_length {
             self.alpha = alpha_before_insertion;
-            self.last_updated_at = ts;
+            self.exceeds_target_at = 0;
+        }
+        // if mean length is above target but exceeds_target_at is 0
+        // this means the mean length grows above target naturally, we'll need to find the
+        // correct value for exceeds_target_at.
+        if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
+            self.exceeds_target_at = ts - (old_mean_length - self.target_mean_length);
         }
     }
 
@@ -121,12 +130,21 @@ impl AccrualParameter {
         self.mean_length.remove(amount, length, ts);
         let new_mean_length = self.mean_length.mean(ts);
 
-        if (old_mean_length >= self.target_mean_length && new_mean_length < self.target_mean_length)
-            || (old_mean_length < self.target_mean_length
-                && new_mean_length >= self.target_mean_length)
-        {
+        // if mean length drops below target, reset exceeds_target_at
+        if old_mean_length > self.target_mean_length && new_mean_length < self.target_mean_length {
             self.alpha = alpha_before_removal;
-            self.last_updated_at = ts;
+            self.exceeds_target_at = 0;
+        }
+        if new_mean_length > self.target_mean_length {
+            // if this action makes the mean length above target, then exceeds_target_at should be now
+            if old_mean_length < self.target_mean_length {
+                self.exceeds_target_at = ts;
+            }
+            // the mean length grows above target naturally
+            // need to find the correct exceeds_target_at
+            if self.exceeds_target_at == 0 {
+                self.exceeds_target_at = ts - (old_mean_length - self.target_mean_length);
+            }
         }
     }
 }
@@ -350,7 +368,9 @@ mod tests {
         // day 17.5
         let ts = 17 * ONE_DAY_MS + HALF_DAY_MS;
         assert_eq!(accrual.current_alpha(ts), 254041920); // INIT_ALPHA * 0.99^2
-                                                          // insert 1 near
+
+        // insert 2 near
+        accrual.weighted_mean_insert(ONE_NEAR, ts);
         accrual.weighted_mean_insert(ONE_NEAR, ts);
         assert_eq!(accrual.current_alpha(ts), 254041920); // INIT_ALPHA * 0.99^2
 
@@ -364,6 +384,18 @@ mod tests {
         // day 21
         let ts = 21 * ONE_DAY_MS + HALF_DAY_MS;
         assert_eq!(accrual.current_alpha(ts), 244031653); // INIT_ALPHA * 0.99^6
+
+        // day 40
+        let ts = 40 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), 201611286); // INIT_ALPHA * 0.99^25
+
+        // remove first 100 near, this SHALL NOT affect alpha
+        accrual.weighted_mean_remove(100 * ONE_NEAR, 40 * ONE_DAY_MS, ts);
+        assert_eq!(accrual.current_alpha(ts), 201611286); // INIT_ALPHA * 0.99^25
+
+        // day 41
+        let ts = 41 * ONE_DAY_MS;
+        assert_eq!(accrual.current_alpha(ts), 199595173); // INIT_ALPHA * 0.99^26
     }
 
     #[test]
