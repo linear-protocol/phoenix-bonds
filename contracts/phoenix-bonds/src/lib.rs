@@ -31,6 +31,7 @@ mod lost_found;
 mod math;
 mod metadata;
 mod owner;
+mod token_receiver;
 mod types;
 mod upgrade;
 mod utils;
@@ -171,22 +172,7 @@ impl PhoenixBonds {
         #[callback_result] staked_linear_amount: Result<U128, PromiseError>,
     ) -> Option<u32> {
         if let Ok(linear_amount) = staked_linear_amount {
-            self.pending_pool_near_amount += bond_amount.0;
-            self.linear_balance += linear_amount.0;
-
-            self.accrual_param
-                .weighted_mean_insert(bond_amount.0, current_timestamp_ms());
-
-            let note = self.bond_notes.insert_new_note(&user_id, bond_amount.0);
-
-            Event::Bond {
-                account_id: user_id,
-                note_id: note.id(),
-                bond_amount,
-                linear_amount,
-            }
-            .emit();
-
+            let note = self.internal_create_bond(user_id, bond_amount.0, linear_amount.0);
             Some(note.id())
         } else {
             // refund user deposited NEAR
@@ -451,6 +437,31 @@ impl PhoenixBonds {
 }
 
 impl PhoenixBonds {
+    fn internal_create_bond(
+        &mut self,
+        user_id: AccountId,
+        bond_amount: u128,
+        staked_linear_amount: u128,
+    ) -> BondNote {
+        self.pending_pool_near_amount += bond_amount;
+        self.linear_balance += staked_linear_amount;
+
+        self.accrual_param
+            .weighted_mean_insert(bond_amount, current_timestamp_ms());
+
+        let note = self.bond_notes.insert_new_note(&user_id, bond_amount);
+
+        Event::Bond {
+            account_id: user_id,
+            note_id: note.id(),
+            bond_amount: U128(bond_amount),
+            linear_amount: U128(staked_linear_amount),
+        }
+        .emit();
+
+        note
+    }
+
     fn get_linear_price(&self) -> Promise {
         linear_contract::ext(self.linear_address.clone())
             .with_static_gas(GAS_GET_LINEAR_PRICE)
