@@ -134,7 +134,7 @@ impl AccrualParameter {
             self.exceeds_target_at = 0;
         } else if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
             // if this action makes the mean length above target, then exceeds_target_at should be now.
-            if old_mean_length < self.target_mean_length {
+            if old_mean_length <= self.target_mean_length {
                 self.exceeds_target_at = ts;
             } else {
                 // else if the mean length grows above target naturally
