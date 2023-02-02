@@ -29,6 +29,7 @@ mod interfaces;
 mod legacy;
 mod lost_found;
 mod math;
+mod metadata;
 mod owner;
 mod types;
 mod upgrade;
