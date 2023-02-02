@@ -73,12 +73,12 @@ impl From<AccrualParameterV1_0_0> for AccrualParameter {
     }
 }
 
-// ------ v1.1.0 ------
+// ------ v1.0.1 ------
 // - Replace last_updated_at with exceeds_target_at in AccrualParameterV1_0_0
 
 #[near_bindgen]
 #[derive(BorshSerialize, BorshDeserialize)]
-pub struct ContractV1_1_0 {
+pub struct ContractV1_0_1 {
     /// pNEAR token
     ft: FungibleToken,
     /// contract owner
