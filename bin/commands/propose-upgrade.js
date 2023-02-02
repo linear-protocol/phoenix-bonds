@@ -51,7 +51,7 @@ exports.handler = async function (argv) {
   console.log("blob hash", hash);
 
   // save blob hash to local file
-  appendFileSync(`blobhash-${env}`, hash);
+  appendFileSync(`blobhash-${env}`, `${hash}\n`);
 
   const proposalArgs = {
     proposal: {
