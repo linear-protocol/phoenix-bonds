@@ -129,7 +129,7 @@ impl AccrualParameter {
         let new_mean_length = self.mean_length.mean(ts);
 
         // if mean length drops below target, reset exceeds_target_at
-        if old_mean_length > self.target_mean_length && new_mean_length < self.target_mean_length {
+        if old_mean_length > self.target_mean_length && new_mean_length <= self.target_mean_length {
             self.alpha = alpha_before_removal;
             self.exceeds_target_at = 0;
         } else if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
