@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{legacy::ContractV1_0_0, *};
 
 #[near_bindgen]
 impl PhoenixBonds {
@@ -10,8 +10,23 @@ impl PhoenixBonds {
     #[init(ignore_state)]
     #[private]
     pub fn migrate() -> Self {
-        let contract: PhoenixBonds = env::state_read().expect("ERR_NOT_INITIALIZED");
-        contract
+        let contract: ContractV1_0_0 = env::state_read().expect("ERR_NOT_INITIALIZED");
+
+        Self {
+            ft: contract.ft,
+            owner_id: contract.owner_id,
+            linear_address: contract.linear_address,
+            paused: contract.paused,
+            linear_balance: contract.linear_balance,
+            pending_pool_near_amount: contract.pending_pool_near_amount,
+            permanent_pool_near_amount: contract.permanent_pool_near_amount,
+            treasury_pool_near_amount: contract.treasury_pool_near_amount,
+            tau: contract.tau,
+            linear_lost_and_found: contract.linear_lost_and_found,
+            bond_notes: contract.bond_notes,
+            bootstrap_ends_at: contract.bootstrap_ends_at,
+            accrual_param: contract.accrual_param.into(),
+        }
     }
 }
 
