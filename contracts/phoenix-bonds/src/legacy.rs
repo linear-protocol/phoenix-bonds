@@ -67,7 +67,7 @@ impl From<AccrualParameterV1_0_0> for AccrualParameter {
             target_mean_length: val.target_mean_length,
             adjust_interval: val.adjust_interval,
             adjust_rate: val.adjust_rate,
-            exceeds_target_at: 0, // TODO
+            exceeds_target_at: 0,
             mean_length: val.mean_length,
         }
     }
