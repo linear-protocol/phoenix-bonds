@@ -9,7 +9,7 @@ pub struct Standard {
 }
 
 /// To make it easier for the contract to be audited and validated by community
-/// and 3rd party, we adopt [NEP-330 standard](https://nomicon.io/Standards/SourceMetadata)
+/// and 3rd party, we adopt [NEP-330 standard](https://github.com/near/NEPs/blob/master/neps/nep-0330.md)
 /// to make contract source metadata (including versions, source code links and implemented standards)
 /// available to auditors, developers and users.
 #[derive(Serialize)]
@@ -33,6 +33,18 @@ impl ContractSourceMetadataTrait for PhoenixBonds {
             standards: vec![
                 Standard {
                     standard: "nep141".to_string(),
+                    version: "1.0.0".to_string(),
+                },
+                Standard {
+                    standard: "nep145".to_string(),
+                    version: "1.0.0".to_string(),
+                },
+                Standard {
+                    standard: "nep148".to_string(),
+                    version: "1.0.0".to_string(),
+                },
+                Standard {
+                    standard: "nep297".to_string(),
                     version: "1.0.0".to_string(),
                 },
                 Standard {
