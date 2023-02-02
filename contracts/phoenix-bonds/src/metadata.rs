@@ -3,6 +3,7 @@ use near_sdk::near_bindgen;
 use serde::Serialize;
 
 #[derive(Serialize)]
+#[serde(crate = "near_sdk::serde")]
 pub struct Standard {
     pub standard: String, // standard name e.g. "nep141"
     pub version: String,  // semantic version number of the Standard e.g. "1.0.0"
