@@ -108,17 +108,12 @@ impl AccrualParameter {
         self.mean_length.insert(amount, ts); // this could only make mean length shorter
         let new_mean_length = self.mean_length.mean(ts);
 
-        // if mean length drops below target, reset exceeds_target_at
-        if old_mean_length > self.target_mean_length && new_mean_length <= self.target_mean_length {
-            self.alpha = alpha_before_insertion;
-            self.exceeds_target_at = 0;
-        }
-        // if mean length is above target but exceeds_target_at is 0
-        // this means the mean length grows above target naturally, we'll need to find the
-        // correct value for exceeds_target_at.
-        else if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
-            self.exceeds_target_at = ts - (old_mean_length - self.target_mean_length);
-        }
+        self.handle_mean_length_update(
+            alpha_before_insertion,
+            old_mean_length,
+            new_mean_length,
+            ts,
+        );
     }
 
     pub fn weighted_mean_remove(&mut self, amount: Balance, length: Duration, ts: Timestamp) {
@@ -128,9 +123,19 @@ impl AccrualParameter {
         self.mean_length.remove(amount, length, ts);
         let new_mean_length = self.mean_length.mean(ts);
 
+        self.handle_mean_length_update(alpha_before_removal, old_mean_length, new_mean_length, ts);
+    }
+
+    fn handle_mean_length_update(
+        &mut self,
+        alpha_before_update: Duration,
+        old_mean_length: Duration,
+        new_mean_length: Duration,
+        ts: Timestamp,
+    ) {
         // if mean length drops below target, reset exceeds_target_at
         if old_mean_length > self.target_mean_length && new_mean_length <= self.target_mean_length {
-            self.alpha = alpha_before_removal;
+            self.alpha = alpha_before_update;
             self.exceeds_target_at = 0;
         } else if self.exceeds_target_at == 0 && new_mean_length > self.target_mean_length {
             // if this action makes the mean length above target, then exceeds_target_at should be now.
