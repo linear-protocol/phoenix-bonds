@@ -3,7 +3,9 @@ use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
 use near_sdk::{near_bindgen, PromiseOrValue};
 
 const MINIMUM_BOND_LINEAR_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 LiNEAR
+const BOND_MSG: &str = "Bond";
 
+const ERR_BAD_MSG: &str = "Unrecognized message";
 const ERR_BAD_TOKEN: &str = "Only LiNEAR token can be used to bond";
 const ERR_SMALL_BOND_LINEAR_AMOUNT: &str = "Bond amount must be at least 0.1 LiNEAR";
 
@@ -17,6 +19,7 @@ impl FungibleTokenReceiver for PhoenixBonds {
         msg: String,
     ) -> PromiseOrValue<U128> {
         require!(env::prepaid_gas() >= GAS_FT_ON_TRANSFER, ERR_NOT_ENOUGH_GAS);
+        require!(msg == BOND_MSG, ERR_BAD_MSG);
 
         let token_address = env::predecessor_account_id();
         require!(token_address == self.linear_address, ERR_BAD_TOKEN);

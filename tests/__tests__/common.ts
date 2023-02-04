@@ -299,7 +299,7 @@ export async function bondWithLinear(
     {
       receiver_id: phoenix.accountId,
       amount,
-      msg: "",
+      msg: "Bond",
     },
     {
       attachedDeposit: NEAR.from("1"),

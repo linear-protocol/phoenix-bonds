@@ -151,6 +151,30 @@ test("LiNEAR amount too low", async (test) => {
   test.is(await getFtBalance(linear, alice), amount.toString(10));
 });
 
+test("Wrong bond msg", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  const amount = NEAR.parse("100");
+
+  await mintLinear(alice, linear, amount.toString(10));
+  await ftStorageDeposit(linear, phoenix);
+
+  await alice.call(
+    linear,
+    "ft_transfer_call",
+    {
+      receiver_id: phoenix.accountId,
+      amount,
+      msg: "",
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("120 Tgas"),
+    }
+  );
+
+  test.is(await getFtBalance(linear, alice), amount.toString(10));
+});
+
 test("Bond with LiNEAR", async (test) => {
   const { alice, phoenix, linear } = test.context.accounts;
   const amount = NEAR.parse("1000");
