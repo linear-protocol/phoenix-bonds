@@ -6,7 +6,7 @@ const MINIMUM_BOND_LINEAR_AMOUNT: u128 = ONE_NEAR / 10 + ONE_NEAR / 100; // 0.11
 
 const ERR_BAD_MSG: &str = "Unrecognized message";
 const ERR_BAD_TOKEN: &str = "Only LiNEAR token can be used to bond";
-const ERR_SMALL_BOND_LINEAR_AMOUNT: &str = "Bond amount must be at least 0.1 LiNEAR";
+const ERR_SMALL_BOND_LINEAR_AMOUNT: &str = "Bond amount must be at least 0.11 LiNEAR";
 const ERR_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
 const ERR_MALFORMED_MESSAGE: &str = "Invalid transfer action message";
 
