@@ -4,7 +4,10 @@ import {
   assertFailure,
   bond,
   BondNote,
+  bondWithLinear,
+  ftStorageDeposit,
   getBondNote,
+  getFtBalance,
   getLinearPrice,
   setLinearPanic,
 } from "./common";
@@ -31,6 +34,8 @@ function verifyNewBondNote(
 }
 
 const test = init();
+
+// ---- Bond with NEAR
 
 test("Bond with small amount", async (test) => {
   const { alice, phoenix } = test.context.accounts;
@@ -100,5 +105,100 @@ test("Bond failed and all deposits are refunded", async (test) => {
     Big(balanceBefore.sub(balanceAfter).toString()).lt(
       Big(NEAR.parse("0.002").toString())
     )
+  );
+});
+
+// ---- Bond with LiNEAR
+
+async function mintLinear(
+  account: NearAccount,
+  linear: NearAccount,
+  amount: string
+) {
+  await account.call(
+    linear,
+    "deposit_and_stake",
+    {},
+    {
+      attachedDeposit: amount,
+    }
+  );
+}
+
+test("Wrong token transferred", async (test) => {
+  const { alice, phoenix, fakeLinear } = test.context.accounts;
+  const amount = NEAR.parse("1000");
+
+  // mint some fake linear
+  await mintLinear(alice, fakeLinear, amount.toString(10));
+  await ftStorageDeposit(fakeLinear, phoenix);
+
+  await bondWithLinear(alice, phoenix, fakeLinear, amount.toString(10));
+
+  // all fake tokens should be refunded
+  test.is(await getFtBalance(fakeLinear, alice), amount.toString(10));
+});
+
+test("LiNEAR amount too low", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  const amount = NEAR.parse("1");
+
+  await mintLinear(alice, linear, amount.toString(10));
+  await ftStorageDeposit(linear, phoenix);
+
+  await bondWithLinear(alice, phoenix, linear, NEAR.parse("0.1").toString(10));
+
+  test.is(await getFtBalance(linear, alice), amount.toString(10));
+});
+
+test("Wrong bond msg", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  const amount = NEAR.parse("100");
+
+  await mintLinear(alice, linear, amount.toString(10));
+  await ftStorageDeposit(linear, phoenix);
+
+  await alice.call(
+    linear,
+    "ft_transfer_call",
+    {
+      receiver_id: phoenix.accountId,
+      amount,
+      msg: "",
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("120 Tgas"),
+    }
+  );
+
+  test.is(await getFtBalance(linear, alice), amount.toString(10));
+});
+
+test("Bond with LiNEAR", async (test) => {
+  const { alice, phoenix, linear } = test.context.accounts;
+  const amount = NEAR.parse("1000");
+
+  await mintLinear(alice, linear, amount.toString(10));
+  await ftStorageDeposit(linear, phoenix);
+
+  const usedAmount = await bondWithLinear(
+    alice,
+    phoenix,
+    linear,
+    amount.toString(10)
+  );
+
+  test.is(usedAmount, amount.toString(10));
+
+  const note = await getBondNote(
+    phoenix,
+    alice,
+    0,
+    NEAR.parse("1").toString(10)
+  );
+  test.is(
+    note.bond_amount,
+    amount.sub(NEAR.parse("0.01")).toString(10) // 0.01 NEAR as storage deposit
   );
 });

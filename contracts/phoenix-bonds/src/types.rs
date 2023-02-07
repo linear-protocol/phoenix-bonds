@@ -39,6 +39,10 @@ pub const GAS_CLAIM: Gas = Gas(20 * TGAS);
 pub const GAS_WITHDRAW: Gas = Gas(20 * TGAS);
 /// 120 Tgas
 pub const GAS_WITHDRAW_CALLBACK: Gas = Gas(40 * TGAS + GAS_FT_TRANSFER_AND_CALLBACK.0);
+/// 90 Tgas
+pub const GAS_FT_ON_TRANSFER: Gas =
+    Gas(20 * TGAS + GAS_GET_LINEAR_PRICE.0 + GAS_LINEAR_BOND_CALLBACK.0);
+pub const GAS_LINEAR_BOND_CALLBACK: Gas = Gas(50 * TGAS);
 
 pub const GAS_DEPOSIT_AND_STAKE: Gas = Gas(50 * TGAS);
 pub const GAS_GET_LINEAR_PRICE: Gas = Gas(20 * TGAS);

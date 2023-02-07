@@ -286,3 +286,24 @@ export async function claimLostAndFound(
     }
   );
 }
+
+export async function bondWithLinear(
+  account: NearAccount,
+  phoenix: NearAccount,
+  linear: NearAccount,
+  amount: string
+): Promise<string> {
+  return account.call(
+    linear,
+    "ft_transfer_call",
+    {
+      receiver_id: phoenix.accountId,
+      amount,
+      msg: `"Bond"`,
+    },
+    {
+      attachedDeposit: NEAR.from("1"),
+      gas: Gas.parse("120 Tgas"),
+    }
+  );
+}
