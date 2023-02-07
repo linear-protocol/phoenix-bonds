@@ -1,13 +1,20 @@
 use crate::*;
 use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
-use near_sdk::{near_bindgen, PromiseOrValue};
+use near_sdk::{near_bindgen, serde::Deserialize, PromiseOrValue};
 
-const MINIMUM_BOND_LINEAR_AMOUNT: u128 = ONE_NEAR / 10; // 0.1 LiNEAR
-const BOND_MSG: &str = "Bond";
+const MINIMUM_BOND_LINEAR_AMOUNT: u128 = ONE_NEAR / 10 + ONE_NEAR / 100; // 0.11 LiNEAR
 
 const ERR_BAD_MSG: &str = "Unrecognized message";
 const ERR_BAD_TOKEN: &str = "Only LiNEAR token can be used to bond";
 const ERR_SMALL_BOND_LINEAR_AMOUNT: &str = "Bond amount must be at least 0.1 LiNEAR";
+const ERR_LINEAR_PRICE: &str = "Failed to get LiNEAR price";
+const ERR_MALFORMED_MESSAGE: &str = "Invalid transfer action message";
+
+#[derive(Deserialize, PartialEq)]
+#[serde(crate = "near_sdk::serde")]
+enum Action {
+    Bond,
+}
 
 #[near_bindgen]
 impl FungibleTokenReceiver for PhoenixBonds {
@@ -19,7 +26,9 @@ impl FungibleTokenReceiver for PhoenixBonds {
         msg: String,
     ) -> PromiseOrValue<U128> {
         require!(env::prepaid_gas() >= GAS_FT_ON_TRANSFER, ERR_NOT_ENOUGH_GAS);
-        require!(msg == BOND_MSG, ERR_BAD_MSG);
+
+        let action = serde_json::from_str::<Action>(&msg).expect(ERR_MALFORMED_MESSAGE);
+        require!(action == Action::Bond, ERR_BAD_MSG);
 
         let token_address = env::predecessor_account_id();
         require!(token_address == self.linear_address, ERR_BAD_TOKEN);
@@ -47,7 +56,7 @@ impl PhoenixBonds {
         linear_amount: U128,
         #[callback_result] linear_price: Result<U128, PromiseError>,
     ) -> U128 {
-        let linear_price = linear_price.unwrap().0;
+        let linear_price = linear_price.expect(ERR_LINEAR_PRICE).0;
         let near_amount = linear2near(linear_amount.0, linear_price);
         let bond_amount = near_amount - BOND_STORAGE_DEPOSIT;
 

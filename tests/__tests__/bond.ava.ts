@@ -146,7 +146,7 @@ test("LiNEAR amount too low", async (test) => {
   await mintLinear(alice, linear, amount.toString(10));
   await ftStorageDeposit(linear, phoenix);
 
-  await bondWithLinear(alice, phoenix, linear, NEAR.parse("0.09").toString(10));
+  await bondWithLinear(alice, phoenix, linear, NEAR.parse("0.1").toString(10));
 
   test.is(await getFtBalance(linear, alice), amount.toString(10));
 });
