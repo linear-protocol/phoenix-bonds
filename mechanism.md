@@ -3,7 +3,7 @@
 ## Tokens
 - `NEAR`
 - `LiNEAR`
-- `pNEAR`: Boosted NEAR in Phoenix bond
+- `pNEAR`: Boosted NEAR in Phoenix Bonds
 
 ## Symbols
  - ### Variables
