@@ -1,4 +1,4 @@
-# Phoenix Bond Math
+# Phoenix Bonds Math
 
 ## Tokens
 - `NEAR`
