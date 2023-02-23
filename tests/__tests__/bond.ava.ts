@@ -10,6 +10,10 @@ import {
   getFtBalance,
   getLinearPrice,
   setLinearPanic,
+  getPnearPrice,
+  commit,
+  daysToMs,
+  setTimestamp,
 } from "./common";
 import { init, tau } from "./init";
 
@@ -176,11 +180,21 @@ test("Wrong bond msg", async (test) => {
 });
 
 test("Bond with LiNEAR", async (test) => {
-  const { alice, phoenix, linear } = test.context.accounts;
+  const { alice, bob, phoenix, linear } = test.context.accounts;
   const amount = NEAR.parse("1000");
 
   await mintLinear(alice, linear, amount.toString(10));
+  await mintLinear(bob, linear, amount.toString(10));
   await ftStorageDeposit(linear, phoenix);
+
+  const linearPrice = await getLinearPrice(linear);
+  const pnearPriceBeforeBond = await getPnearPrice(phoenix, linearPrice);
+
+  // let bob bond and commit some pNEAR first
+  await setTimestamp(phoenix, daysToMs(20));
+  await bond(bob, phoenix, amount);
+  await setTimestamp(phoenix, daysToMs(30));
+  await commit(phoenix, bob, 0);
 
   const usedAmount = await bondWithLinear(
     alice,
@@ -200,5 +214,12 @@ test("Bond with LiNEAR", async (test) => {
   test.is(
     note.bond_amount,
     amount.sub(NEAR.parse("0.01")).toString(10) // 0.01 NEAR as storage deposit
+  );
+
+  const pnearPriceAfterBond = await getPnearPrice(phoenix, linearPrice);
+  test.is(
+    pnearPriceAfterBond,
+    pnearPriceBeforeBond,
+    "pNEAR price should not change"
   );
 });

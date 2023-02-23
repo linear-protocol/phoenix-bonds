@@ -60,7 +60,9 @@ impl PhoenixBonds {
         let near_amount = linear2near(linear_amount.0, linear_price);
         let bond_amount = near_amount - BOND_STORAGE_DEPOSIT;
 
-        self.internal_create_bond(user_id, bond_amount, near2linear(near_amount, linear_price));
+        // This guarantees the pNEAR redeem price is consistent after bonding,
+        // but it will make some LiNEAR left in the contract balance but not in any of the pools.
+        self.internal_create_bond(user_id, bond_amount, near2linear(bond_amount, linear_price));
 
         U128(0)
     }
