@@ -60,7 +60,7 @@ impl PhoenixBonds {
         let near_amount = linear2near(linear_amount.0, linear_price);
         let bond_amount = near_amount - BOND_STORAGE_DEPOSIT;
 
-        self.internal_create_bond(user_id, bond_amount, linear_amount.0);
+        self.internal_create_bond(user_id, bond_amount, near2linear(near_amount, linear_price));
 
         U128(0)
     }
