@@ -26,6 +26,7 @@ pub struct Summary {
     bootstrap_ends_at: Timestamp,
     tau: BasisPoint,
     accrual_parameter: AccrualInfo,
+    total_lost_and_found_linear: U128,
 }
 
 #[near_bindgen]
@@ -51,6 +52,7 @@ impl PhoenixBonds {
                 target_mean_length: self.accrual_param.target_mean_length,
                 current_mean_length: self.accrual_param.mean_length.mean(current_ms),
             },
+            total_lost_and_found_linear: self.linear_lost_and_found.total_amount().into(),
         }
     }
 }
